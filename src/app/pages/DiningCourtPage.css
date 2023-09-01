@@ -1,0 +1,5 @@
+.dc-button-cont {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 1em;
+}

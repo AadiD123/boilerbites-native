@@ -1,0 +1,30 @@
+/* FoodCourtBar.css */
+
+/* Remove padding from IonCard and IonCardContent */
+ion-card {
+  padding: 0;
+}
+
+ion-card-content {
+  padding: 0;
+}
+
+/* Optionally, you can style IonCardTitle and IonCardSubtitle if needed */
+ion-card-title,
+ion-card-subtitle {
+  /* Your custom styles here */
+}
+
+/* Remove padding from IonList and its items */
+ion-list {
+  padding: 0;
+}
+
+ion-item {
+  padding: 0;
+}
+
+/* Optionally, you can style DishItem components or their child elements */
+.dish-item {
+  /* Your custom styles here */
+}

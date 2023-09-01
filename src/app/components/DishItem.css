@@ -1,0 +1,7 @@
+/* custom.css */
+/* Override IonButton styling for the image */
+.ion-button.image-button {
+  background-color: transparent; /* Set the background to transparent */
+  border: none; /* Remove the border */
+  padding: 0; /* Remove padding */
+}
