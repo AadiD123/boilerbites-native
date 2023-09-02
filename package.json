@@ -32,11 +32,14 @@
     "express": "^4.18.2",
     "ionicons": "^7.0.0",
     "mongoose": "^7.5.0",
+    "mysql2": "^3.6.0",
     "nodemon": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
-    "react-router-dom": "^5.3.4"
+    "react-router-dom": "^5.3.4",
+    "sequelize": "^6.32.1",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "@capacitor/cli": "5.3.0",
@@ -47,7 +50,7 @@
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-legacy": "^4.0.2",
     "@vitejs/plugin-react": "^4.0.1",
-    "cypress": "^12.7.0",
+    "cypress": "^12.17.4",
     "eslint": "^8.35.0",
     "eslint-plugin-react": "^7.32.2",
     "jsdom": "^22.1.0",

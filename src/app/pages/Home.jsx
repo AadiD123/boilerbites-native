@@ -23,10 +23,14 @@ const Home = () => {
   const options = ["vegetarian", "vegan", "no beef", "no pork", "gluten-free"];
 
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [dishes, setDishes] = useState([]);
 
   const handleSelectionChange = (event) => {
     setSelectedOptions(event.target.value);
   };
+
+
+
 
   return (
     <IonPage>
