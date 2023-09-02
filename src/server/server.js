@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2")
 const cors = require("cors");
-const ratingRoutes = require("./routes/ratings");
+//const ratingRoutes = require("./routes/ratings");
 const dishRoutes = require("./routes/dishes");
 const timingRoutes = require("./routes/timings");
 
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 // routes
-app.use("/api/ratings", ratingRoutes);
+//app.use("/api/ratings", ratingRoutes);
 app.use("/api/dishes", dishRoutes);
 app.use("/api/timings", timingRoutes);
 
@@ -36,6 +36,11 @@ db.connect((err) => {
     return;
   }
   console.log('Connected to MySQL');
+});
+
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 app.locals.db = db;

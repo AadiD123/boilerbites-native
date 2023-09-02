@@ -30,8 +30,6 @@ const Home = () => {
   };
 
 
-
-
   return (
     <IonPage>
       <IonHeader>

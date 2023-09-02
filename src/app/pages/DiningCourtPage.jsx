@@ -35,95 +35,37 @@ import FoodCourtBar from "../components/FoodCourtBar";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [meal, setMeal] = useState("");
+  const [currentMeal, setCurrentMeal] = useState("");
   const [dishesByStation, setDishesByStation] = useState({});
-
-  // const isCurrentMeal = (meal, selectedDate) => {
-  //   const currentDate = new Date();
-  //   const currentHour = currentDate.getHours();
-  //   const currentMeal =
-  //     currentHour >= 7 && currentHour < 10
-  //       ? "Breakfast"
-  //       : (currentHour >= 11 && currentHour) < 13
-  //       ? "Lunch"
-  //       : "Dinner";
-
-  //   const isSameDate =
-  //     selectedDate.getDate() === currentDate.getDate() &&
-  //     selectedDate.getMonth() === currentDate.getMonth() &&
-  //     selectedDate.getFullYear() === currentDate.getFullYear();
-
-  //   return isSameDate && meal === currentMeal;
-  // };
-
-  // useEffect(() => {
-  //   const currentHour = selectedDate.getHours();
-  //   if (currentHour >= 21) {
-  //     setSelectedDate(
-  //       new Date(selectedDate.setDate(selectedDate.getDate() + 1))
-  //     );
-  //   }
-  //   if (currentHour < 10) {
-  //     setMeal("Breakfast");
-  //   } else if (currentHour < 13) {
-  //     setMeal("Lunch");
-  //   } else if (currentHour < 20) {
-  //     setMeal("Dinner");
-  //   }
-  // }, []);
+  const [dayData, setDayData] = useState([]);
+  const [mealsForDay, setMealsForDay] = useState({})
 
   useEffect(() => {
     const fetchCurrentFood = async () => {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1)
+      const day = String(currentDate.getDate());
+
+      const formattedDate = `${year}-${month}-${day}`;
+     
       const response = await fetch(
+        `http://localhost:4000/api/dishes/${props.diningCourt}/${formattedDate}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+
         
-    // if (meal !== "") {
-    //   const fetchCurrentFood = async () => {
-    //     const response = await fetch(
-    //       `${
-    //         import.meta.env.VITE_API_BASE_URL
-    //       }/api/timings/${selectedDate.getFullYear()}/${
-    //         selectedDate.getMonth() + 1
-    //       }/${selectedDate.getDate()}/${props.foodCourtName}/${meal}`
-    //     );
-
-    //     if (response.ok) {
-    //       const json = await response.json();
-
-    //       if (json.length === 0) {
-    //         // setDishes([]);
-    //         setDishesByStation({});
-    //       } else {
-    //         // const newDishes = json["0"].display;
-
-    //         // setDishes(newDishes);
-    //         const groupedDishes = {};
-
-    //         json["0"].display.forEach((dish) => {
-    //           const { station } = dish;
-    //           if (!groupedDishes[station]) {
-    //             groupedDishes[station] = [];
-    //           }
-    //           groupedDishes[station].push(dish);
-    //         });
-
-    //         for (const station in groupedDishes) {
-    //           groupedDishes[station].sort(
-    //             (a, b) => b.averagerating - a.averagerating
-    //           );
-    //         }
-
-    //         setDishesByStation(groupedDishes);
-    //       }
-    //     } else {
-    //       console.log(
-    //         "Error fetching dishes for dining court",
-    //         props.diningCourt
-    //       );
-    //     }
-    //   };
-    //   fetchCurrentFood();
-    // }
-  }, [meal, selectedDate]);
+        var meals = {}
+        for (meal in data["Meals"]) {
+          if (meal["Status"] == "Open") {
+            meals[meal["Name"]] = [meal["Hours"]["StartTime"], meal["Hours"]["EndTime"]]
+          } else {
+            meals[meal["Name"]] = ["Closed", "Closed"]
+          } 
+        }
+      }
+    };
+  }, [currentMeal, selectedDate]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -160,6 +102,7 @@ export default function DiningCourtPage(props) {
                 </Button>
               </IonCol>
               <IonCol size="3">
+              {meals}
                 <Button
                   variant={meal === "Lunch" ? "contained" : "outlined"}
                   color="primary"
