@@ -1,11 +1,4 @@
 const fetch = require('node-fetch');
-const mysql = require('mysql2');
-
-const dbConnection = mysql.createConnection({
-  host: "boilerbites-1.cjmepwltgjhe.us-east-2.rds.amazonaws.com",
-  user: "admin",
-  password: "purduepete"
-});
 
 async function hasPig(item) {
   const pigKeywords = ['pork', 'bacon', 'ham', 'sausage', 'lard'];
@@ -79,8 +72,7 @@ async function isDishExists(dishId, connection) {
   });
 }
 
-async function processMeals(data) {
-  dbConnection.connect()
+async function processMeals(data, dbConnection) {
   for (const meal of data.Meals) {
     console.log(meal);
     if (meal["Status"] == "Open") {
@@ -102,17 +94,17 @@ async function processMeals(data) {
       }
     }
   }
-  dbConnection.close();
 }
 
 async function getLocationData(req, res) {
   const { location, date } = req.params; 
+  const db = req.db;
   const url = "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
   try {
       const response = await fetch(url);
       if (response.status === 200) {
           const jsonData = await response.json();
-          processMeals(jsonData)
+          processMeals(jsonData, db)
           .then(() => {
               console.log('Processing completed.');
           })

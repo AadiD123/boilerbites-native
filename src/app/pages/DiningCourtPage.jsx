@@ -36,9 +36,7 @@ import FoodCourtBar from "../components/FoodCourtBar";
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMeal, setCurrentMeal] = useState("");
-  const [dishesByStation, setDishesByStation] = useState({});
-  const [dayData, setDayData] = useState([]);
-  const [mealsForDay, setMealsForDay] = useState({})
+  const [dishesByStation, setDishesByStation] = useState({});  
 
   useEffect(() => {
     const fetchCurrentFood = async () => {
@@ -53,9 +51,7 @@ export default function DiningCourtPage(props) {
       );
       if (response.ok) {
         const data = await response.json();
-
         
-        var meals = {}
         for (meal in data["Meals"]) {
           if (meal["Status"] == "Open") {
             meals[meal["Name"]] = [meal["Hours"]["StartTime"], meal["Hours"]["EndTime"]]
