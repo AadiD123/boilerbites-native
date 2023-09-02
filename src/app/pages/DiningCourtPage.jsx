@@ -35,91 +35,94 @@ import FoodCourtBar from "../components/FoodCourtBar";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [dishesByStation, setDishesByStation] = useState({});
   const [meal, setMeal] = useState("");
+  const [dishesByStation, setDishesByStation] = useState({});
 
-  const isCurrentMeal = (meal, selectedDate) => {
-    const currentDate = new Date();
-    const currentHour = currentDate.getHours();
-    const currentMeal =
-      currentHour >= 7 && currentHour < 10
-        ? "Breakfast"
-        : (currentHour >= 11 && currentHour) < 13
-        ? "Lunch"
-        : "Dinner";
+  // const isCurrentMeal = (meal, selectedDate) => {
+  //   const currentDate = new Date();
+  //   const currentHour = currentDate.getHours();
+  //   const currentMeal =
+  //     currentHour >= 7 && currentHour < 10
+  //       ? "Breakfast"
+  //       : (currentHour >= 11 && currentHour) < 13
+  //       ? "Lunch"
+  //       : "Dinner";
 
-    const isSameDate =
-      selectedDate.getDate() === currentDate.getDate() &&
-      selectedDate.getMonth() === currentDate.getMonth() &&
-      selectedDate.getFullYear() === currentDate.getFullYear();
+  //   const isSameDate =
+  //     selectedDate.getDate() === currentDate.getDate() &&
+  //     selectedDate.getMonth() === currentDate.getMonth() &&
+  //     selectedDate.getFullYear() === currentDate.getFullYear();
 
-    return isSameDate && meal === currentMeal;
-  };
+  //   return isSameDate && meal === currentMeal;
+  // };
+
+  // useEffect(() => {
+  //   const currentHour = selectedDate.getHours();
+  //   if (currentHour >= 21) {
+  //     setSelectedDate(
+  //       new Date(selectedDate.setDate(selectedDate.getDate() + 1))
+  //     );
+  //   }
+  //   if (currentHour < 10) {
+  //     setMeal("Breakfast");
+  //   } else if (currentHour < 13) {
+  //     setMeal("Lunch");
+  //   } else if (currentHour < 20) {
+  //     setMeal("Dinner");
+  //   }
+  // }, []);
 
   useEffect(() => {
-    const currentHour = selectedDate.getHours();
-    if (currentHour >= 21) {
-      setSelectedDate(
-        new Date(selectedDate.setDate(selectedDate.getDate() + 1))
-      );
-    }
-    if (currentHour < 10) {
-      setMeal("Breakfast");
-    } else if (currentHour < 13) {
-      setMeal("Lunch");
-    } else if (currentHour < 20) {
-      setMeal("Dinner");
-    }
-  }, []);
+    const fetchCurrentFood = async () => {
+      const response = await fetch(
+        
+    // if (meal !== "") {
+    //   const fetchCurrentFood = async () => {
+    //     const response = await fetch(
+    //       `${
+    //         import.meta.env.VITE_API_BASE_URL
+    //       }/api/timings/${selectedDate.getFullYear()}/${
+    //         selectedDate.getMonth() + 1
+    //       }/${selectedDate.getDate()}/${props.foodCourtName}/${meal}`
+    //     );
 
-  useEffect(() => {
-    if (meal !== "") {
-      const fetchCurrentFood = async () => {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/api/timings/${selectedDate.getFullYear()}/${
-            selectedDate.getMonth() + 1
-          }/${selectedDate.getDate()}/${props.foodCourtName}/${meal}`
-        );
+    //     if (response.ok) {
+    //       const json = await response.json();
 
-        if (response.ok) {
-          const json = await response.json();
+    //       if (json.length === 0) {
+    //         // setDishes([]);
+    //         setDishesByStation({});
+    //       } else {
+    //         // const newDishes = json["0"].display;
 
-          if (json.length === 0) {
-            // setDishes([]);
-            setDishesByStation({});
-          } else {
-            // const newDishes = json["0"].display;
+    //         // setDishes(newDishes);
+    //         const groupedDishes = {};
 
-            // setDishes(newDishes);
-            const groupedDishes = {};
+    //         json["0"].display.forEach((dish) => {
+    //           const { station } = dish;
+    //           if (!groupedDishes[station]) {
+    //             groupedDishes[station] = [];
+    //           }
+    //           groupedDishes[station].push(dish);
+    //         });
 
-            json["0"].display.forEach((dish) => {
-              const { station } = dish;
-              if (!groupedDishes[station]) {
-                groupedDishes[station] = [];
-              }
-              groupedDishes[station].push(dish);
-            });
+    //         for (const station in groupedDishes) {
+    //           groupedDishes[station].sort(
+    //             (a, b) => b.averagerating - a.averagerating
+    //           );
+    //         }
 
-            for (const station in groupedDishes) {
-              groupedDishes[station].sort(
-                (a, b) => b.averagerating - a.averagerating
-              );
-            }
-
-            setDishesByStation(groupedDishes);
-          }
-        } else {
-          console.log(
-            "Error fetching dishes for dining court",
-            props.diningCourt
-          );
-        }
-      };
-      fetchCurrentFood();
-    }
+    //         setDishesByStation(groupedDishes);
+    //       }
+    //     } else {
+    //       console.log(
+    //         "Error fetching dishes for dining court",
+    //         props.diningCourt
+    //       );
+    //     }
+    //   };
+    //   fetchCurrentFood();
+    // }
   }, [meal, selectedDate]);
 
   const handleDateChange = (selectedDate) => {

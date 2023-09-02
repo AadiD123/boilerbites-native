@@ -4,6 +4,7 @@ const {
   getDishes,
   getDish,
   // getDCDishes,
+  getAllDishesForLocation,
   deleteDish,
   updateDish,
 } = require("../controllers/dishController");
@@ -17,6 +18,8 @@ router.get("/:id", getDish);
 
 // GET all dishes
 router.get("/", getDishes);
+
+router.get("/:location/:date", getAllDishesForLocation);
 
 // POST a dish
 router.post("/", createDish);
