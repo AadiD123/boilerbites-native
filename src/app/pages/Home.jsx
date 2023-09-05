@@ -42,12 +42,61 @@ const Home = () => {
 
   // experimental code below
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
   const [mealDict, setMealDict] = useState({});
   const [dishesByStation, setDishesByStation] = useState({});
 
   useEffect(() => {
-    console.log(selectedOptions);
+    const fetchCurrentMeal = async () => {
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1);
+      const day = String(new Date().getDate());
+
+      const formattedDate = `${year}-${month}-${day}`;
+      console.log(formattedDate, props.foodCourtName);
+
+      let selectedOptionsQuery = selectedOptions.join(",");
+
+      const response = await fetch(
+        `http://localhost:4000/api/dishes/${formattedDate}/?restrict=${selectedOptionsQuery}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const mealData = {};
+        const dishesData = {}; // Initialize dishesData
+
+        for (const meal of data["Meals"]) {
+          if (meal["Status"] == "Open") {
+            mealData[meal["Name"]] = [
+              meal["Hours"]["StartTime"],
+              meal["Hours"]["EndTime"],
+            ];
+
+            if (selectedMeal === "") {
+              setSelectedMeal(Object.keys(mealData)[0]);
+            }
+
+            // Populate dishesData based on the current meal
+            if (meal["Name"] === selectedMeal) {
+              for (const station of meal["Stations"]) {
+                dishesData[station["Name"]] = station["Items"];
+              }
+            }
+          } else {
+            mealData[meal["Name"]] = ["Closed", "Closed"];
+          }
+        }
+
+        setMealDict(mealData);
+        setDishesByStation(dishesData); // Set the dishes based on the current meal
+        console.log(mealDict);
+      } else {
+        console.log("Error fetching data");
+      }
+    };
+
+    fetchCurrentMeal();
   }, [selectedOptions]);
 
   const handleSelectionChange = (event) => {

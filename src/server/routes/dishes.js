@@ -1,8 +1,6 @@
 const express = require("express");
 
-const {
-  getLocationData
-} = require("../controllers/dishController");
+const { getLocationData } = require("../controllers/dishController");
 
 const router = express.Router();
 
@@ -12,5 +10,6 @@ router.use((req, res, next) => {
 });
 
 router.get("/:location/:date", getLocationData);
+//router.get("/:date", getAllLocation);
 
 module.exports = router;
