@@ -22,46 +22,77 @@ import {
   IonCol,
 } from "@ionic/react";
 
-import { Button } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Button,
+} from "@mui/material";
 
 import React, { useEffect, useState } from "react";
 import "./DiningCourtPage.css";
 
 // Components
 import FoodCourtCard from "../components/FoodCourtCard";
-import DishItem from "../components/DishItem";
 import Datepicker from "../components/DatePicker";
 import FoodCourtBar from "../components/FoodCourtBar";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentMeal, setCurrentMeal] = useState("");
-  const [dishesByStation, setDishesByStation] = useState({});  
+  const [selectedMeal, setSelectedMeal] = useState("");
+  const [mealDict, setMealDict] = useState({});
+  const [dishesByStation, setDishesByStation] = useState({});
 
   useEffect(() => {
-    const fetchCurrentFood = async () => {
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1)
-      const day = String(currentDate.getDate());
+    const fetchCurrentMeal = async () => {
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1);
+      const day = String(selectedDate.getDate());
 
       const formattedDate = `${year}-${month}-${day}`;
-     
+      console.log(formattedDate, props.foodCourtName);
+
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${props.diningCourt}/${formattedDate}`
+        `http://localhost:4000/api/dishes/${props.foodCourtName}/${formattedDate}`
       );
       if (response.ok) {
         const data = await response.json();
-        
-        for (meal in data["Meals"]) {
+        const mealData = {};
+        const dishesData = {}; // Initialize dishesData
+
+        for (const meal of data["Meals"]) {
           if (meal["Status"] == "Open") {
-            meals[meal["Name"]] = [meal["Hours"]["StartTime"], meal["Hours"]["EndTime"]]
+            mealData[meal["Name"]] = [
+              meal["Hours"]["StartTime"],
+              meal["Hours"]["EndTime"],
+            ];
+
+            if (selectedMeal === "") {
+              setSelectedMeal(Object.keys(mealData)[0]);
+            }
+
+            // Populate dishesData based on the current meal
+            if (meal["Name"] === selectedMeal) {
+              for (const station of meal["Stations"]) {
+                dishesData[station["Name"]] = station["Items"];
+              }
+            }
           } else {
-            meals[meal["Name"]] = ["Closed", "Closed"]
-          } 
+            mealData[meal["Name"]] = ["Closed", "Closed"];
+          }
         }
+
+        setMealDict(mealData);
+        setDishesByStation(dishesData); // Set the dishes based on the current meal
+        console.log(mealDict);
+      } else {
+        console.log("Error fetching data");
       }
     };
-  }, [currentMeal, selectedDate]);
+
+    fetchCurrentMeal();
+  }, [selectedDate, selectedMeal]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -79,53 +110,34 @@ export default function DiningCourtPage(props) {
       <IonContent>
         <IonItem>
           <IonGrid>
-            <FoodCourtCard diningCourt={props.foodCourtName} />
+            {mealDict[selectedMeal] != null ? (
+              <FoodCourtCard
+                diningCourt={props.foodCourtName}
+                openTime={mealDict[selectedMeal][0]}
+                closeTime={mealDict[selectedMeal][1]}
+              />
+            ) : (
+              <FoodCourtCard diningCourt={props.foodCourtName} />
+            )}
+
             <Datepicker onSelectDate={handleDateChange} />
             <IonRow>
-              <IonCol size="4" offset="1">
-                <Button
-                  variant={meal === "Breakfast" ? "contained" : "outlined"}
-                  color="primary"
-                  fullWidth
-                  onClick={() => {
-                    setMeal("Breakfast");
-                  }}
-                  style={{
-                    backgroundColor: meal === "Breakfast" ? "#daaa00" : "",
+              <FormControl fullWidth>
+                <InputLabel>Select a Meal</InputLabel>
+                <Select
+                  value={selectedMeal}
+                  label="Select a Meal"
+                  onChange={(event) => {
+                    setSelectedMeal(event.target.value);
                   }}
                 >
-                  Breakfast
-                </Button>
-              </IonCol>
-              <IonCol size="3">
-              {meals}
-                <Button
-                  variant={meal === "Lunch" ? "contained" : "outlined"}
-                  color="primary"
-                  fullWidth
-                  onClick={() => {
-                    setMeal("Lunch");
-                  }}
-                  style={{ backgroundColor: meal === "Lunch" ? "#daaa00" : "" }}
-                >
-                  Lunch
-                </Button>
-              </IonCol>
-              <IonCol size="3">
-                <Button
-                  variant={meal === "Dinner" ? "contained" : "outlined"}
-                  color="primary"
-                  fullWidth
-                  onClick={() => {
-                    setMeal("Dinner");
-                  }}
-                  style={{
-                    backgroundColor: meal === "Dinner" ? "#daaa00" : "",
-                  }}
-                >
-                  Dinner
-                </Button>
-              </IonCol>
+                  {Object.keys(mealDict).map((mealName) => (
+                    <MenuItem key={mealName} value={mealName}>
+                      {mealName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </IonRow>
           </IonGrid>
         </IonItem>

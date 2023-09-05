@@ -9,7 +9,15 @@ function FoodCourtCard(props) {
         alt={`Image for ${props.diningCourt}`}
         src={`/assets/${props.diningCourt}.png`}
       />
-      <IonCardContent>*Rating*</IonCardContent>
+      <IonCardContent>
+        {props.openTime === "Closed" ? (
+          <p>Closed</p>
+        ) : (
+          <p>
+            {props.openTime} - {props.closeTime}
+          </p>
+        )}
+      </IonCardContent>
     </IonCard>
   );
 }
