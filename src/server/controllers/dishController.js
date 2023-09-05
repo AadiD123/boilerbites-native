@@ -106,38 +106,35 @@ async function processMeals(data, dbConnection) {
   }
 }
 
-async function queryDishesWithRestrictions(filters, dbConnection) {
-  const query = { $and: [] };
-
-  for (const restriction in filters) {
-    if (filters[restriction]) {
-      query.$and.push({ [filters[restriction][0]]: filters[restriction][1] });
-    }
-  }
-
-  try {
-    const filteredDishes = await dbConnection
-      .collection("dishes")
-      .find(query)
-      .toArray();
-    return filteredDishes;
-  } catch (error) {
-    console.error("Error querying dishes with restrictions:", error);
-    throw error;
-  }
-}
-
 async function getLocationData(req, res) {
   const { location, date } = req.params;
   var restrictions = req.query.restrict;
+  restrictions = restrictions.split(",");
   const filters = {
-    vegtarian: "vegetarian = false",
+    vegetarian: "vegetarian = true",
     vegan: "vegan = true",
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
   };
+  var query = "SELECT id FROM boilerbites.dishes WHERE ";
+  for (var r in restrictions) {
+    query += filters[restrictions[r]];
+    if (parseInt(r) !== restrictions.length - 1) {
+      query += " AND ";
+    }
+  }
   const db = req.db;
+  db.query(query, (error, results) => {
+    if (error) {
+      console.error("Error querying dishes:", error);
+    } else {
+      var ids = [];
+      for (var i in results) {
+        ids.push(results[i].id);
+      }
+      console.log(ids);
+    }});
   const url =
     "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
   try {
@@ -151,8 +148,8 @@ async function getLocationData(req, res) {
         .catch((error) => {
           console.error("Error processing meals:", error);
         });
-      const filteredDishes = await queryDishesWithRestrictions(filters, db);
-      res.json(filteredDishes);
+      //const filteredDishes = await queryDishesWithRestrictions(filters, db);
+      res.json(jsonData);
     } else {
       console.log("GET request failed. Status Code:", response.status);
     }
