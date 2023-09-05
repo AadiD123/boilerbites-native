@@ -97,9 +97,11 @@ async function processMeals(data, dbConnection) {
 }
 
 async function getLocationData(req, res) {
-  const { location, date } = req.params; 
+  const { location, date, options } = req.params; 
+  const filters = {"vegetarian": ["vegetarian", true], "vegan": ["vegan", true], "no beef": [beef, false], "no pork": [pork, false], "gluten-free": [gluten, false]}
   const db = req.db;
   const url = "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
+  for ()
   try {
       const response = await fetch(url);
       if (response.status === 200) {
