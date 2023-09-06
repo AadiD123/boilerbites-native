@@ -106,10 +106,59 @@ async function processMeals(data, dbConnection) {
   }
 }
 
+// async function getLocationData(req, res) {
+//   const { location, date } = req.params;
+//   const filters = {
+//     vegetarian: "vegetarian = true",
+//     vegan: "vegan = true",
+//     "no beef": "beef = false",
+//     "no pork": "pork = false",
+//     "gluten-free": "gluten = false",
+//   };
+//   const db = req.db;
+//   var restrictions = req.query.restrict;
+//   restrictions = restrictions.split(",");
+//   var query = "SELECT id FROM boilerbites.dishes WHERE ";
+//   for (var r in restrictions) {
+//     query += filters[restrictions[r]];
+//     if (parseInt(r) !== restrictions.length - 1) {
+//       query += " AND ";
+//     }
+//   }
+//   db.query(query, (error, results) => {
+//     if (error) {
+//       console.error("Error querying dishes:", error);
+//     } else {
+//       var ids = [];
+//       for (var i in results) {
+//         ids.push(results[i].id);
+//       }
+//       console.log(ids);
+//     }});
+//   const url =
+//     "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
+//   try {
+//     const response = await fetch(url);
+//     if (response.status === 200) {
+//       const jsonData = await response.json();
+//       processMeals(jsonData, db)
+//         .then(() => {
+//           console.log("Processing completed.");
+//         })
+//         .catch((error) => {
+//           console.error("Error processing meals:", error);
+//         });
+//       res.json(jsonData);
+//     } else {
+//       console.log("GET request failed. Status Code:", response.status);
+//     }
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//   }
+// }
+
 async function getLocationData(req, res) {
   const { location, date } = req.params;
-  var restrictions = req.query.restrict;
-  restrictions = restrictions.split(",");
   const filters = {
     vegetarian: "vegetarian = true",
     vegan: "vegan = true",
@@ -117,26 +166,9 @@ async function getLocationData(req, res) {
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
   };
-  var query = "SELECT id FROM boilerbites.dishes WHERE ";
-  for (var r in restrictions) {
-    query += filters[restrictions[r]];
-    if (parseInt(r) !== restrictions.length - 1) {
-      query += " AND ";
-    }
-  }
   const db = req.db;
-  db.query(query, (error, results) => {
-    if (error) {
-      console.error("Error querying dishes:", error);
-    } else {
-      var ids = [];
-      for (var i in results) {
-        ids.push(results[i].id);
-      }
-      console.log(ids);
-    }});
-  const url =
-    "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
+  const restrictions = req.query.restrict?.split(",") || [];
+  const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
   try {
     const response = await fetch(url);
     if (response.status === 200) {
@@ -148,8 +180,56 @@ async function getLocationData(req, res) {
         .catch((error) => {
           console.error("Error processing meals:", error);
         });
-      //const filteredDishes = await queryDishesWithRestrictions(filters, db);
-      res.json(jsonData);
+      const dishIds = jsonData.Meals.flatMap((meal) =>
+        meal.Stations.flatMap((station) => station.Items.map((item) => item.ID))
+      );
+      var query = `SELECT id, dish_name FROM boilerbites.dishes WHERE id IN (${dishIds
+        .map((id) => `'${id}'`)
+        .join(",")})`;
+
+      if (restrictions.length > 0 && restrictions[0] !== "") {
+        query += " AND ";
+        for (var r in restrictions) {
+          query += filters[restrictions[r]];
+          if (parseInt(r) !== restrictions.length - 1) {
+            query += " AND ";
+          }
+        }
+      }
+
+      var dishes = [];
+      db.query(query, async (error, results) => {
+        if (error) {
+          console.error("Error querying dishes:", error);
+        } else {
+          for (const result of results) {
+            try {
+              const response = await fetch(
+                `http://localhost:4000/api/ratings/${result.id}`
+              );
+              if (response.ok) {
+                const ratingJson = await response.json();
+
+                dishes.push({
+                  id: result.id,
+                  dish_name: result.dish_name,
+                  avg:
+                    ratingJson.average_stars == null
+                      ? 0
+                      : ratingJson.average_stars,
+                  reviews: ratingJson.numRows == null ? 0 : ratingJson.numRows,
+                });
+              } else {
+                console.error("Error fetching rating:", response.status);
+              }
+            } catch (err) {
+              console.error("Error fetching rating:", err);
+            }
+          }
+
+          res.json(dishes);
+        }
+      });
     } else {
       console.log("GET request failed. Status Code:", response.status);
     }

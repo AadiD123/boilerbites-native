@@ -48,7 +48,7 @@ const Home = () => {
   const [dishesByStation, setDishesByStation] = useState({});
 
   useEffect(() => {
-    const fetchCurrentMeal = async () => {
+    const fetchCurrentMeal = async (location) => {
       const year = new Date().getFullYear();
       const month = String(new Date().getMonth() + 1);
       const day = String(new Date().getDate());
@@ -59,34 +59,36 @@ const Home = () => {
       let selectedOptionsQuery = selectedOptions.join(",");
 
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${formattedDate}/?restrict=${selectedOptionsQuery}`
+        `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();
-        const mealData = {};
-        const dishesData = {}; // Initialize dishesData
 
-        for (const meal of data["Meals"]) {
-          if (meal["Status"] == "Open") {
-            mealData[meal["Name"]] = [
-              meal["Hours"]["StartTime"],
-              meal["Hours"]["EndTime"],
-            ];
+        // const data = await response.json();
+        // const mealData = {};
+        // const dishesData = {}; // Initialize dishesData
 
-            if (selectedMeal === "") {
-              setSelectedMeal(Object.keys(mealData)[0]);
-            }
+        // for (const meal of data["Meals"]) {
+        //   if (meal["Status"] == "Open") {
+        //     mealData[meal["Name"]] = [
+        //       meal["Hours"]["StartTime"],
+        //       meal["Hours"]["EndTime"],
+        //     ];
 
-            // Populate dishesData based on the current meal
-            if (meal["Name"] === selectedMeal) {
-              for (const station of meal["Stations"]) {
-                dishesData[station["Name"]] = station["Items"];
-              }
-            }
-          } else {
-            mealData[meal["Name"]] = ["Closed", "Closed"];
-          }
-        }
+        //     if (selectedMeal === "") {
+        //       setSelectedMeal(Object.keys(mealData)[0]);
+        //     }
+
+        //     // Populate dishesData based on the current meal
+        //     if (meal["Name"] === selectedMeal) {
+        //       for (const station of meal["Stations"]) {
+        //         dishesData[station["Name"]] = station["Items"];
+        //       }
+        //     }
+        //   } else {
+        //     mealData[meal["Name"]] = ["Closed", "Closed"];
+        //   }
+        // }
 
         setMealDict(mealData);
         setDishesByStation(dishesData); // Set the dishes based on the current meal
@@ -96,7 +98,13 @@ const Home = () => {
       }
     };
 
-    fetchCurrentMeal();
+    for (const location of locations) {
+      fetchCurrentMeal(location);
+    }
+
+    for (const location of quickBites) {
+      fetchCurrentMeal(location);
+    }
   }, [selectedOptions]);
 
   const handleSelectionChange = (event) => {
