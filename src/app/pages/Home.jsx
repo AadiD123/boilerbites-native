@@ -41,58 +41,67 @@ const Home = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   // experimental code below
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedMeal, setSelectedMeal] = useState("");
-  const [mealDict, setMealDict] = useState({});
+    
+  const [currentMeal, setCurrentMeal] = useState("");
+  const [allDCMealData, setAllDCMealData] = useState({});
+  const [dcTimings, setAllDCTimings] = useState({});
   const [dishesByStation, setDishesByStation] = useState({});
 
   useEffect(() => {
     const fetchCurrentMeal = async (location) => {
+
+      // Get today's date and current meal time 
+
       const year = new Date().getFullYear();
       const month = String(new Date().getMonth() + 1);
       const day = String(new Date().getDate());
-
-      const formattedDate = `${year}-${month}-${day}`;
-      console.log(formattedDate, props.foodCourtName);
+      const formattedDate = `${year}-${month}-${day}`;      
 
       let selectedOptionsQuery = selectedOptions.join(",");
 
+      // sends dish_id, dish_name, avg rating, num of reviews
       const response = await fetch(
         `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();
 
-        // const data = await response.json();
-        // const mealData = {};
-        // const dishesData = {}; // Initialize dishesData
+        // get all the dishes for the dining court and store in temp data variable
+        const mealData = {};     
+        const timingData = {};
+        const dishesData = {};
 
-        // for (const meal of data["Meals"]) {
-        //   if (meal["Status"] == "Open") {
-        //     mealData[meal["Name"]] = [
-        //       meal["Hours"]["StartTime"],
-        //       meal["Hours"]["EndTime"],
-        //     ];
+        // get current time
+        const currentTime = new Date();
+        const currentFormattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
 
-        //     if (selectedMeal === "") {
-        //       setSelectedMeal(Object.keys(mealData)[0]);
-        //     }
+        // loop through all the meals for the dining court for the day
+        for (const meal of data["Meals"]) {
+          if (meal["Status"] == "Open") {
 
-        //     // Populate dishesData based on the current meal
-        //     if (meal["Name"] === selectedMeal) {
-        //       for (const station of meal["Stations"]) {
-        //         dishesData[station["Name"]] = station["Items"];
-        //       }
-        //     }
-        //   } else {
-        //     mealData[meal["Name"]] = ["Closed", "Closed"];
-        //   }
-        // }
+            const mealStartTime = meal["Hours"]["StartTime"];
+            const mealEndTime = meal["Hours"]["EndTime"];
 
-        setMealDict(mealData);
+            // Check if the current time is within the meal's start and end times
+            if (currentFormattedTime >= mealStartTime && currentFormattedTime <= mealEndTime) {
+              timingData[meal["Name"]] = [mealStartTime, mealEndTime];
+              currentMeal = meal["Name"];
+            }
+
+            // Populate dishesData based on the current meal
+            if (meal["Name"] === currentMeal) {
+              for (const station of meal["Stations"]) {
+                dishesData[station["Name"]] = station["Items"];
+              }
+            }
+          } else {
+            mealData[meal["Name"]] = ["Closed", "Closed"];
+          }
+        }
+
+        setAllDCMealData(mealData);
         setDishesByStation(dishesData); // Set the dishes based on the current meal
-        console.log(mealDict);
+        console.log(allDCMealData);
       } else {
         console.log("Error fetching data");
       }
