@@ -41,80 +41,109 @@ const Home = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   // experimental code below
-    
+
   const [currentMeal, setCurrentMeal] = useState("");
-  const [allDCMealData, setAllDCMealData] = useState({});
-  const [dcTimings, setAllDCTimings] = useState({});
-  const [dishesByStation, setDishesByStation] = useState({});
+  const [dcAvgRatings, setDCAvgRatings] = useState({});
+  const [allDCData, setDCData] = useState({});
+
+  const [date, setDate] = useState(new Date());
+
+  const [dcTimings, setDCTimings] = useState({});
 
   useEffect(() => {
-    const fetchCurrentMeal = async (location) => {
+    const fetchLocationData = async (location) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1);
+      const day = String(date.getDate());
+      const formattedDate = `${year}-${month}-${day}`;
 
-      // Get today's date and current meal time 
+      const selectedOptionsQuery = selectedOptions.join(",");
 
-      const year = new Date().getFullYear();
-      const month = String(new Date().getMonth() + 1);
-      const day = String(new Date().getDate());
-      const formattedDate = `${year}-${month}-${day}`;      
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+        );
 
-      let selectedOptionsQuery = selectedOptions.join(",");
+        if (response.ok) {
+          const data = await response.json();
+          const currentTime = date;
+          const currentFormattedTime = `${currentTime
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${currentTime
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}:${currentTime
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
 
-      // sends dish_id, dish_name, avg rating, num of reviews
-      const response = await fetch(
-        `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
-      );
-      if (response.ok) {
-        const data = await response.json();
+          const timingData = {};
+          let ratings = 0;
+          let numDishes = 0;
+          let currentMeal = "";
 
-        // get all the dishes for the dining court and store in temp data variable
-        const mealData = {};     
-        const timingData = {};
-        const dishesData = {};
+          for (const meal of data) {
+            if (meal["status"] === "Open") {
+              const mealStartTime = meal["timing"][0];
+              const mealEndTime = meal["timing"][1];
 
-        // get current time
-        const currentTime = new Date();
-        const currentFormattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
-
-        // loop through all the meals for the dining court for the day
-        for (const meal of data["Meals"]) {
-          if (meal["Status"] == "Open") {
-
-            const mealStartTime = meal["Hours"]["StartTime"];
-            const mealEndTime = meal["Hours"]["EndTime"];
-
-            // Check if the current time is within the meal's start and end times
-            if (currentFormattedTime >= mealStartTime && currentFormattedTime <= mealEndTime) {
-              timingData[meal["Name"]] = [mealStartTime, mealEndTime];
-              currentMeal = meal["Name"];
-            }
-
-            // Populate dishesData based on the current meal
-            if (meal["Name"] === currentMeal) {
-              for (const station of meal["Stations"]) {
-                dishesData[station["Name"]] = station["Items"];
+              if (
+                currentFormattedTime >= mealStartTime &&
+                currentFormattedTime <= mealEndTime
+              ) {
+                timingData[meal["meal_name"]] = [mealStartTime, mealEndTime];
+                currentMeal = meal["meal_name"];
               }
-            }
-          } else {
-            mealData[meal["Name"]] = ["Closed", "Closed"];
-          }
-        }
 
-        setAllDCMealData(mealData);
-        setDishesByStation(dishesData); // Set the dishes based on the current meal
-        console.log(allDCMealData);
-      } else {
-        console.log("Error fetching data");
+              if (meal["meal_name"] === currentMeal) {
+                for (const station of meal["stations"]) {
+                  for (const item of station["items"]) {
+                    ratings += item["avg"] > 0 ? item["avg"] : 0;
+                    numDishes += item["reviews"] > 0 ? 1 : 0;
+                  }
+                }
+              }
+              const currentHour = date.getHours();
+              if (currentHour >= 21) {
+                date = new Date(date.setDate(date.getDate() + 1));
+              }
+            } else {
+              // Handle closed dining court
+            }
+          }
+
+          const avgRating = numDishes > 0 ? ratings / numDishes : 0;
+
+          // Update state with the fetched data
+          setDCData((dcData) => ({ ...dcData, [location]: data }));
+          setDCTimings((dcTimings) => ({
+            ...dcTimings,
+            [location]: timingData,
+          }));
+          setDCAvgRatings((dcAvgRatings) => ({
+            ...dcAvgRatings,
+            [location]: avgRating,
+          }));
+        } else {
+          console.log("Error fetching data");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
 
-    for (const location of locations) {
-      fetchCurrentMeal(location);
-    }
+    // Fetch data for each location
+    const allLocations = [...locations, ...quickBites];
+    const fetchDataPromises = allLocations.map((location) =>
+      fetchLocationData(location)
+    );
 
-    for (const location of quickBites) {
-      fetchCurrentMeal(location);
-    }
-  }, [selectedOptions]);
+    // Wait for all fetch requests to complete
+    Promise.all(fetchDataPromises).then(() => {
+      console.log("All data fetched.");
+    });
+  }, [selectedOptions, date]);
 
   const handleSelectionChange = (event) => {
     setSelectedOptions(event.target.value);
@@ -158,7 +187,14 @@ const Home = () => {
           <IonCardContent>
             <IonList>
               {locations.map((location, index) => (
-                <LocationItem key={index} location={location} />
+                <LocationItem
+                  key={index}
+                  location={location}
+                  // openTime={dcTimings[location][0]}
+                  // closeTime={dcTimings[location][1]}
+                  data={allDCData[location]}
+                  totalAvgRating={dcAvgRatings[location]}
+                />
               ))}
             </IonList>
           </IonCardContent>
@@ -170,7 +206,14 @@ const Home = () => {
           <IonCardContent>
             <IonList>
               {quickBites.map((location, index) => (
-                <LocationItem key={index} location={location} />
+                <LocationItem
+                  key={index}
+                  location={location}
+                  // openTime={dcTimings[location][0]}
+                  // closeTime={dcTimings[location][1]}
+                  data={allDCData[location]}
+                  totalAvgRating={dcAvgRatings[location]}
+                />
               ))}
             </IonList>
           </IonCardContent>

@@ -12,7 +12,10 @@ export default function LocationItem(props) {
       <IonLabel>
         {props.openTime} - {props.closeTime}
       </IonLabel>
-      <LocationRating location={`${props.location}`} />
+      <LocationRating
+        location={`${props.location}`}
+        totalAvgRating={props.avgRating}
+      />
     </IonItem>
   );
 }

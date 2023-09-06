@@ -92,7 +92,7 @@ export default function DiningCourtPage(props) {
     };
 
     fetchCurrentMeal();
-  }, [selectedDate, selectedMeal]);
+  }, [selectedDate]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
