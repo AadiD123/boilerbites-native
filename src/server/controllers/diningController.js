@@ -125,7 +125,7 @@ async function getDiningCourtRating(req, res) {
         }
       });
       const averageStars = sum / num_dishes;
-      res.status(200).json()
+      res.status(200).json(averageStars);
     } else {
       console.log("GET request failed. Status Code:", response.status);
     }
