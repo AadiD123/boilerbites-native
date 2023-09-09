@@ -88,7 +88,6 @@ const connection = await pool.getConnection();
 try {
   // Execute the query using the acquired connection with the dishIds as an array
   const [filtered, _] = await connection.query(query, [dishIds]);
-
   if (filtered.length === 0) {
     return res.status(404).json({ error: "No ratings found for any dish" });
   }
