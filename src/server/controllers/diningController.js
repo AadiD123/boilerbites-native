@@ -1,4 +1,8 @@
 const fetch = require("node-fetch");
+const mysql = require("mysql2/promise");
+const { Pool } = require("@mui/icons-material");
+
+
 
 async function getDiningTiming(req, res) {
   const { location, date } = req.params;
@@ -45,92 +49,67 @@ async function getDiningCourtRating(req, res) {
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
   };
-  const db = req.db;
+  const pool = req.app.locals.pool;
   const restrictions = req.query.restrict?.split(",") || [];
   const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
+  
   try {
     const response = await fetch(url);
+    
     if (response.status === 200) {
       const jsonData = await response.json();
-      const dishData = jsonData.Meals.map((meal) => {
-        const mealName = meal.Name;
-        const status = meal.Status;
-        const timing =
-          status === "Open"
-            ? [meal.Hours.StartTime, meal.Hours.EndTime]
-            : ["Closed", "Closed"];
-        const stations = meal.Stations.map((station) => {
-          const stationName = station.Name;
-          const items = station.Items.map((item) => {
-            const itemId = item.ID;
-            const dishName = item.Name;
-
-            return { id: itemId, dish_name: dishName };
-          });
-
-          return { station_name: stationName, items };
-        });
-
-        return {
-          meal_name: mealName,
-          status: status,
-          timing: timing,
-          stations,
-        };
-      });
 
       const dishIds = [];
-      jsonData.Meals.forEach((meal) => {
-        meal.Stations.forEach((station) => {
-          station.Items.forEach((item) => {
-            dishIds.push(item.ID);
-          });
-        });
+  jsonData.Meals.forEach((meal) => {
+    meal.Stations.forEach((station) => {
+      station.Items.forEach((item) => {
+        dishIds.push(item.ID);
       });
-      var query = `SELECT id, dish_name FROM boilerbites.dishes WHERE id IN (${dishIds
-        .map((id) => `'${id}'`)
-        .join(",")})`;
+    });
+  });
 
-      if (restrictions.length > 0 && restrictions[0] !== "") {
-        query += " AND ";
-        for (var r in restrictions) {
-          query += filters[restrictions[r]];
-          if (parseInt(r) !== restrictions.length - 1) {
-            query += " AND ";
-          }
-        }
+      if (dishIds.length === 0) {
+        // Handle the case where no dishes were found
+        return res.status(404).json({ error: "No dishes found" });
       }
-      var sum = 0;
-      var num_dishes = 0;
-      db.query(query, async (error, filtered) => {
-        if (error) {
-          console.error("Error querying dishes:", error);
-        } else {
-          for (const f of filtered) {
-            query = "SELECT AVG(stars) AS average_stars FROM boilerbites.ratings WHERE dish_id = ?";
-            db.query(query, [f], (error, results) => {
-              if (error) {
-                console.error("Error querying ratings:", error);
-                res.status(500).json({ error: "Internal Server Error" });
-              } else {
-                if (results.length > 0 && results[0].average_stars !== null) {
-                  sum += results[0].average_stars;
-                  num_dishes++;
-                } else {
-                  res.status(404).json({ error: "No ratings found for this dish" });
-                }
-              }
-            });
-          }
-        }
-      });
-      const averageStars = sum / num_dishes;
-      res.status(200).json(averageStars);
-    } else {
-      console.log("GET request failed. Status Code:", response.status);
+
+      const query = `
+  SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars
+  FROM boilerbites.dishes AS d
+  LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
+  WHERE d.id IN (?)
+  ${restrictions.length > 0 ? "AND " + restrictions.map(r => filters[r]).join(" AND ") : ""}
+  GROUP BY d.id, d.dish_name;
+`;
+
+// Acquire a connection from the pool
+const connection = await pool.getConnection();
+
+try {
+  // Execute the query using the acquired connection with the dishIds as an array
+  const [filtered, _] = await connection.query(query, [dishIds]);
+
+  if (filtered.length === 0) {
+    return res.status(404).json({ error: "No ratings found for any dish" });
+  }
+
+  const sum = filtered.reduce((acc, dish) => acc + dish.average_stars, 0);
+  const num_dishes = filtered.length;
+  const averageStars = sum / num_dishes;
+
+  res.status(200).json({ averageStars });
+} finally {
+  // Always release the connection when done
+  connection.release();
+}
+
+      } else {
+        console.log("GET request failed. Status Code:", response.status);
+        res.status(500).json({ error: "Failed to fetch data" });
     }
   } catch (error) {
     console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
