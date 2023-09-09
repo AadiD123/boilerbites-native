@@ -80,16 +80,18 @@ async function isDishExists(dishId, connection) {
 }
 
 async function processMeals(data, dbConnection) {
+  const connection = await dbConnection.getConnection();
+
   for (const meal of data.Meals) {
     if (meal["Status"] == "Open") {
       for (const station of meal["Stations"]) {
         for (const item of station["Items"]) {
           const dishId = item.ID;
           try {
-            const exists = await isDishExists(dishId, dbConnection);
+            const exists = await isDishExists(dishId, connection);
 
             if (!exists) {
-              await addDish(dishId, data.Location, dbConnection);
+              await addDish(dishId, data.Location, connection);
             }
           } catch (error) {
             console.error("Error processing dish:", error);
@@ -160,99 +162,107 @@ async function getLocationData(req, res) {
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
   };
-  const db = req.db;
+  const pool = req.app.locals.pool; // Use the pool from app.locals
   const restrictions = req.query.restrict?.split(",") || [];
   const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
+
   try {
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
-      processMeals(jsonData, db)
-        .then(() => {
-          console.log("Processing completed.");
-        })
-        .catch((error) => {
-          console.error("Error processing meals:", error);
-        });
-      const dishIds = [];
-      jsonData.Meals.forEach((meal) => {
-        meal.Stations.forEach((station) => {
-          station.Items.forEach((item) => {
-            dishIds.push(item.ID);
-          });
-        });
-      });
-      var query = `SELECT id, dish_name FROM boilerbites.dishes WHERE id IN (${dishIds
-        .map((id) => `'${id}'`)
-        .join(",")})`;
 
-      if (restrictions.length > 0 && restrictions[0] !== "") {
-        query += " AND ";
-        for (var r in restrictions) {
-          query += filters[restrictions[r]];
-          if (parseInt(r) !== restrictions.length - 1) {
-            query += " AND ";
-          }
-        }
-      }
+      const [dishIds] = await Promise.all([
+        //processMeals(jsonData, pool), // Use the pool here
+        getDishIds(jsonData),
+      ]);
+      const dishes = await fetchRatingsForDishes(dishIds, pool); // Use the pool here
+      console.log(dishes);
+      const finalDishData = enhanceDishData(jsonData, dishes);
 
-      var dishes = [];
-      var structuredDishData;
-      db.query(query, async (error, results) => {
-        if (error) {
-          console.error("Error querying dishes:", error);
-        } else {
-          for (const result of results) {
-            try {
-              const response = await fetch(
-                `http://localhost:4000/api/ratings/${result.id}`
-              );
-              if (response.ok) {
-                const ratingJson = await response.json();
-
-                dishes.push({
-                  id: result.id,
-                  dish_name: result.dish_name,
-                  avg:
-                    ratingJson.average_stars == null
-                      ? 0
-                      : ratingJson.average_stars,
-                  reviews: ratingJson.numRows == null ? 0 : ratingJson.numRows,
-                });
-              } else {
-                console.error("Error fetching rating:", response.status);
-              }
-            } catch (err) {
-              console.error("Error fetching rating:", err);
-            }
-          }
-
-          structuredDishData = dishData.map((mealData) => {
-            const stations = mealData.stations.map((stationData) => {
-              const itemsWithRating = stationData.items.map((item) => {
-                const dish = dishes.find((d) => d.id === item.id);
-                if (dish) {
-                  return { ...item, avg: dish.avg, reviews: dish.reviews };
-                } else {
-                  return { ...item, avg: 0, reviews: 0 };
-                }
-              });
-              return { ...stationData, items: itemsWithRating };
-            });
-            return { ...mealData, stations };
-          });
-        }
-        res.json(structuredDishData);
-      });
-      //res.json(structuredDishData);
+      res.json(finalDishData);
     } else {
       console.log("GET request failed. Status Code:", response.status);
+      res.status(response.status).send("Failed to fetch data.");
     }
   } catch (error) {
     console.error("Error fetching data:", error);
+    res.status(500).send("Internal Server Error");
   }
 }
 
+
+async function getDishIds(jsonData) {
+  const dishIds = [];
+  jsonData.Meals.forEach((meal) => {
+    meal.Stations.forEach((station) => {
+      station.Items.forEach((item) => {
+        dishIds.push(item.ID);
+      });
+    });
+  });
+  return dishIds;
+}
+
+async function fetchRatingsForDishes(dishIds, pool) {
+  const dishes = [];
+  for (const id of dishIds) {
+    try {
+      const connection = await pool.getConnection();
+
+      const [results] = await connection.execute(`SELECT AVG(stars) as average_stars, COUNT(*) as numRows FROM boilerbites.ratings WHERE dish_id = ?`, [id]);
+
+      connection.release();
+
+      const ratingJson = results[0];
+      dishes.push({
+        id,
+        avg: ratingJson.average_stars || 0,
+        reviews: ratingJson.numRows || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching rating:", err);
+    }
+  }
+  return dishes;
+}
+
+function enhanceDishData(mealData, dishes) {
+  jsonData.Meals.map((meal) => {
+    const mealName = meal.Name;
+    const stations = meal.Stations.map((station) => {
+      const stationName = station.Name;
+      const items = station.Items.map((item) => {
+        const itemId = item.ID;
+        const dishName = item.Name;
+
+        return { id: itemId, dish_name: dishName };
+      });
+
+      return { station_name: stationName, items };
+    });
+    return {
+      meal_name: mealName,
+      status: status,
+      timing: timing,
+      stations,
+    };
+  });
+
+  return mealData.map((mealData) => {
+    const stations = mealData.stations.map((stationData) => {
+      const itemsWithRating = stationData.items.map((item) => {
+        const dish = dishes.find((d) => d.id === item.id);
+        if (dish) {
+          return { ...item, avg: dish.avg, reviews: dish.reviews };
+        } else {
+          return { ...item, avg: 0, reviews: 0 };
+        }
+      });
+      return { ...stationData, items: itemsWithRating };
+    });
+    return { ...mealData, stations };
+  });
+}
 module.exports = {
   getLocationData,
 };
