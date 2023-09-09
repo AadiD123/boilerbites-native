@@ -5,7 +5,7 @@ const mysql = require("mysql2")
 const cors = require("cors");
 const ratingRoutes = require("./routes/ratings");
 const dishRoutes = require("./routes/dishes");
-const timingRoutes = require("./routes/timings");
+const timingRoutes = require("./routes/dinings");
 
 
 // creates express app
@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 // routes
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/dishes", dishRoutes);
-app.use("/api/timings", timingRoutes);
+app.use("/api/dinings", timingRoutes);
 
 db.connect((err) => {
   if (err) {

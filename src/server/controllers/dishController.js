@@ -174,33 +174,6 @@ async function getLocationData(req, res) {
         .catch((error) => {
           console.error("Error processing meals:", error);
         });
-      const dishData = jsonData.Meals.map((meal) => {
-        const mealName = meal.Name;
-        const status = meal.Status;
-        const timing =
-          status === "Open"
-            ? [meal.Hours.StartTime, meal.Hours.EndTime]
-            : ["Closed", "Closed"];
-        const stations = meal.Stations.map((station) => {
-          const stationName = station.Name;
-          const items = station.Items.map((item) => {
-            const itemId = item.ID;
-            const dishName = item.Name;
-
-            return { id: itemId, dish_name: dishName };
-          });
-
-          return { station_name: stationName, items };
-        });
-
-        return {
-          meal_name: mealName,
-          status: status,
-          timing: timing,
-          stations,
-        };
-      });
-
       const dishIds = [];
       jsonData.Meals.forEach((meal) => {
         meal.Stations.forEach((station) => {

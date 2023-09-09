@@ -56,73 +56,11 @@ const updateRating = async (req, res) => {
   });
 };
 
-async function getDiningCourtRating(req, res) {
-  const { location, meal } = req.params;
-  const filters = {
-    vegetarian: "vegetarian = true",
-    vegan: "vegan = true",
-    "no beef": "beef = false",
-    "no pork": "pork = false",
-    "gluten-free": "gluten = false",
-  };
-  const db = req.db;
-  const restrictions = req.query.restrict?.split(",") || [];
-  const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
-  try {
-    const response = await fetch(url);
-    if (response.status === 200) {
-      const jsonData = await response.json();
-      
-      const dishIds = jsonData["Meals"][meal].flatMap(Stations.flatMap((station) => station.Items.map((item) => item.ID))
-      );
-      var query = `SELECT id, dish_name FROM boilerbites.dishes WHERE id IN (${dishIds
-        .map((id) => `'${id}'`)
-        .join(",")})`;
 
-      if (restrictions.length > 0 && restrictions[0] !== "") {
-        query += " AND ";
-        for (var r in restrictions) {
-          query += filters[restrictions[r]];
-          if (parseInt(r) !== restrictions.length - 1) {
-            query += " AND ";
-          }
-        }
-      }
-
-      var dishes = [];
-      db.query(query, async (error, results) => {
-        if (error) {
-          console.error("Error querying dishes:", error);
-        } else {
-          for (const result of results) {
-            try {
-              const response = await fetch(
-                `http://localhost:4000/api/ratings/${result.id}`
-              );
-              if (response.ok) {
-                const ratingJson = await response.json();
-              } else {
-                console.error("Error fetching rating:", response.status);
-              }
-            } catch (err) {
-              console.error("Error fetching rating:", err);
-            }
-          }
-
-          res.json(dishes);
-        }
-      });
-    } else {
-      console.log("GET request failed. Status Code:", response.status);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
 
 
 module.exports = {
   createRating,
   getRatings,
-  updateRating,
+  updateRating
 };
