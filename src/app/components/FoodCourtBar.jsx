@@ -12,6 +12,7 @@ import {
 import DishItem from "./DishItem";
 
 export default function FoodCourtBar(props) {
+  console.log(props.bar, props.dishData);
   return (
     <IonCard>
       <IonCardHeader>
@@ -23,7 +24,7 @@ export default function FoodCourtBar(props) {
             props.dishData.map((dish, index) => (
               <DishItem
                 key={index}
-                name={dish.Name}
+                name={dish.dish_name}
                 likes={dish.likes}
                 dislikes={dish.dislikes}
               />

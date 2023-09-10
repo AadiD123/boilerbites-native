@@ -37,70 +37,92 @@ import "./DiningCourtPage.css";
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import FoodCourtBar from "../components/FoodCourtBar";
+import { set } from "mongoose";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
+
+  const [meals, setMeals] = useState([]);
   const [mealDict, setMealDict] = useState({});
-  const [dishesByStation, setDishesByStation] = useState({});
+
+  const getDate = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1);
+    const day = String(date.getDate());
+    const formattedDate = `${year}-${month}-${day}`;
+
+    return formattedDate;
+  };
+
+  const getCurrentTime = () => {
+    const currentTime = new Date();
+    const currentFormattedTime = `${currentTime
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${currentTime
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}:${currentTime
+      .getSeconds()
+      .toString()
+      .padStart(2, "0")}`;
+
+    return currentFormattedTime;
+  };
+
+  const convertTo12HourFormat = (time) => {
+    const [hours, minutes] = time.split(":");
+    let period = "AM";
+    let hour = parseInt(hours);
+
+    if (hour >= 12) {
+      period = "PM";
+      if (hour > 12) {
+        hour -= 12;
+      }
+    }
+
+    return `${hour}:${minutes} ${period}`;
+  };
 
   useEffect(() => {
+    const date = getDate();
+
     const fetchCurrentMeal = async () => {
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1);
-      const day = String(selectedDate.getDate());
-
-      const formattedDate = `${year}-${month}-${day}`;
-      console.log(formattedDate, props.foodCourtName);
-
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+        `http://localhost:4000/api/dishes/${props.location}/${date}/`
       );
       if (response.ok) {
         const data = await response.json();
-        const mealData = {};
-        const dishesData = {}; // Initialize dishesData
+        const mealDict = {};
 
         for (const meal of data) {
-          if (meal["status"] === "Open") {
-            const mealStartTime = meal["timing"][0];
-            const mealEndTime = meal["timing"][1];
+          setMeals((meals) => [...meals, meal["meal_name"]]);
 
-            if (
-              currentFormattedTime >= mealStartTime &&
-              currentFormattedTime <= mealEndTime
-            ) {
-              timingData[meal["meal_name"]] = [mealStartTime, mealEndTime];
-              currentMeal = meal["meal_name"];
-            }
-
-            if (meal["meal_name"] === currentMeal) {
-              for (const station of meal["stations"]) {
-                for (const item of station["items"]) {
-                  ratings += item["avg"] > 0 ? item["avg"] : 0;
-                  numDishes += item["reviews"] > 0 ? 1 : 0;
-                }
-              }
-            }
-            const currentHour = date.getHours();
-            if (currentHour >= 21) {
-              date = new Date(date.setDate(date.getDate() + 1));
-            }
-          } else {
-            // Handle closed dining court
+          if (selectedMeal == "") {
+            setSelectedMeal(meal["meal_name"]);
+            console.log(selectedMeal);
           }
+
+          const stationsArray = meal["stations"].map((station) => {
+            const stationName = station["station_name"];
+            const items = station["items"];
+            return { stationName, items };
+          });
+
+          mealDict[meal["meal_name"]] = stationsArray;
         }
 
-        setMealDict(mealData);
-        setDishesByStation(dishesData); // Set the dishes based on the current meal
-        console.log(mealDict);
+        setMealDict(mealDict);
       } else {
         console.log("Error fetching data");
       }
     };
 
     fetchCurrentMeal();
-  }, [selectedDate]);
+  }, [selectedDate, selectedMeal]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -118,14 +140,10 @@ export default function DiningCourtPage(props) {
       <IonContent>
         <IonItem>
           <IonGrid>
-            {mealDict[selectedMeal] != null ? (
-              <FoodCourtCard
-                diningCourt={props.foodCourtName}
-                openTime={mealDict[selectedMeal][0]}
-                closeTime={mealDict[selectedMeal][1]}
-              />
+            {selectedMeal != "" && mealDict[selectedMeal] != null ? (
+              <FoodCourtCard diningCourt={props.location} />
             ) : (
-              <FoodCourtCard diningCourt={props.foodCourtName} />
+              <FoodCourtCard diningCourt={props.location} />
             )}
 
             <Datepicker onSelectDate={handleDateChange} />
@@ -150,21 +168,14 @@ export default function DiningCourtPage(props) {
           </IonGrid>
         </IonItem>
 
-        {Object.keys(dishesByStation).length > 0 ? (
-          Object.keys(dishesByStation)
-            .sort((stationA, stationB) => {
-              return (
-                dishesByStation[stationB].length -
-                dishesByStation[stationA].length
-              );
-            })
-            .map((station) => (
-              <FoodCourtBar
-                key={station}
-                bar={station}
-                dishData={dishesByStation[station]}
-              />
-            ))
+        {selectedMeal != "" && mealDict[selectedMeal].length > 0 ? (
+          mealDict[selectedMeal].map((stationData) => (
+            <FoodCourtBar
+              key={stationData.stationName}
+              bar={stationData.stationName}
+              dishData={stationData.items}
+            />
+          ))
         ) : (
           <IonCard>
             <IonCardHeader>

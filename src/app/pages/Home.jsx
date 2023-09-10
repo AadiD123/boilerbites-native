@@ -228,7 +228,6 @@ const Home = () => {
         );
         if (response.ok) {
           const locationTimes = await response.json();
-          console.log(location, locationTimes);
 
           const currentTime = getCurrentTime(date);
           var closestNextOpenTime = currentTime;

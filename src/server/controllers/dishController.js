@@ -40,35 +40,64 @@ async function addDishIfNotExists(id, pool) {
 
     const insertQuery =
       "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    console.log(jsonData);
     const data = [
       jsonData.ID,
       jsonData.Name,
       jsonData.IsVegetarian,
-      jsonData.Allergens && jsonData.Allergens[11] ? jsonData.Allergens[11].Value : null,
-      (!jsonData.IsVegetarian && jsonData.Nutrition) ? await hasPig(jsonData) : null,
-      (!jsonData.IsVegetarian && jsonData.Nutrition) ? await hasCow(jsonData) : null,
-      jsonData.Allergens && jsonData.Allergens[3] ? jsonData.Allergens[3].Value : null,
-      jsonData.Allergens && ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) || (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
-      jsonData.Nutrition && jsonData.Nutrition[1] ? jsonData.Nutrition[1].Value : null,
-      jsonData.Nutrition && jsonData.Nutrition[3] ? jsonData.Nutrition[3].Value : null,
-      jsonData.Nutrition && jsonData.Nutrition[7] ? jsonData.Nutrition[7].Value : null,
-      jsonData.Nutrition && jsonData.Nutrition[11] ? jsonData.Nutrition[11].Value : null,
+      jsonData.Allergens && jsonData.Allergens[11]
+        ? jsonData.Allergens[11].Value
+        : null,
+      !jsonData.IsVegetarian &&
+      jsonData.Nutrition &&
+      jsonData.Nutrition.Ingredients
+        ? await hasPig(jsonData)
+        : null,
+      !jsonData.IsVegetarian &&
+      jsonData.Nutrition &&
+      jsonData.Nutrition.Ingredients
+        ? await hasCow(jsonData)
+        : null,
+      jsonData.Allergens && jsonData.Allergens[3]
+        ? jsonData.Allergens[3].Value
+        : null,
+      jsonData.Allergens &&
+        ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
+          (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+      jsonData.Nutrition && jsonData.Nutrition[1]
+        ? jsonData.Nutrition[1].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[3]
+        ? jsonData.Nutrition[3].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[7]
+        ? jsonData.Nutrition[7].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[11]
+        ? jsonData.Nutrition[11].Value
+        : null,
     ];
 
     const connection = await pool.getConnection();
 
     try {
       // Check if the dish exists
-      const existsQuery = "SELECT COUNT(*) AS count FROM boilerbites.dishes WHERE id = ?";
+      const existsQuery =
+        "SELECT COUNT(*) AS count FROM boilerbites.dishes WHERE id = ?";
       const existsResults = await connection.query(existsQuery, [jsonData.ID]);
       const exists = existsResults[0].count > 0;
 
       if (!exists) {
         // Insert the dish data if it doesn't exist
         await connection.query(insertQuery, data);
-        console.log(`Successfully inserted data for dish with ID ${jsonData.ID}`);
+        console.log(
+          `Successfully inserted data for dish with ID ${jsonData.ID}`
+        );
       } else {
-        console.log(`Dish with ID ${jsonData.ID} already exists. Skipping insertion.`);
+        console.log(
+          `Dish with ID ${jsonData.ID} already exists. Skipping insertion.`
+        );
       }
     } catch (error) {
       console.error("Error checking or inserting data:", error);
@@ -76,7 +105,10 @@ async function addDishIfNotExists(id, pool) {
       connection.release();
     }
   } else {
-    console.log(`GET request failed for dish with ID ${id}. Status Code:`, response.status);
+    console.log(
+      `GET request failed for dish with ID ${id}. Status Code:`,
+      response.status
+    );
   }
 }
 
@@ -186,7 +218,11 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
   FROM boilerbites.dishes AS d
   LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
   WHERE d.id IN (?)
-  ${restrictions.length > 0 ? "AND " + restrictions.map(r => filters[r]).join(" AND ") : ""}
+  ${
+    restrictions.length > 0
+      ? "AND " + restrictions.map((r) => filters[r]).join(" AND ")
+      : ""
+  }
   GROUP BY d.id, d.dish_name;
   `;
   const dishIds = [];
@@ -217,7 +253,12 @@ function enhanceDishData(mealData, dishes) {
         const dishName = item.Name;
         const dish = dishes.find((d) => d.id === item.ID);
         if (dish) {
-          return { id: itemId, dish_name: dishName, avg: dish.average_stars, reviews: dish.num_ratings };
+          return {
+            id: itemId,
+            dish_name: dishName,
+            avg: dish.average_stars,
+            reviews: dish.num_ratings,
+          };
         }
       });
 
