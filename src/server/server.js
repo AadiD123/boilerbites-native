@@ -5,7 +5,7 @@ const mysql = require("mysql2/promise")
 const cors = require("cors");
 const ratingRoutes = require("./routes/ratings");
 const dishRoutes = require("./routes/dishes");
-const timingRoutes = require("./routes/dinings");
+const diningRoutes = require("./routes/dinings");
 
 const app = express();
 
@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/dishes", dishRoutes);
-app.use("/api/dinings", timingRoutes);
+app.use("/api/dinings", diningRoutes);
 
 // No need to explicitly connect to the database here
 
