@@ -54,32 +54,40 @@ export default function DiningCourtPage(props) {
       console.log(formattedDate, props.foodCourtName);
 
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${props.foodCourtName}/${formattedDate}`
+        `http://localhost:4000/api/dishes/${location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();
         const mealData = {};
         const dishesData = {}; // Initialize dishesData
 
-        for (const meal of data["Meals"]) {
-          if (meal["Status"] == "Open") {
-            mealData[meal["Name"]] = [
-              meal["Hours"]["StartTime"],
-              meal["Hours"]["EndTime"],
-            ];
+        for (const meal of data) {
+          if (meal["status"] === "Open") {
+            const mealStartTime = meal["timing"][0];
+            const mealEndTime = meal["timing"][1];
 
-            if (selectedMeal === "") {
-              setSelectedMeal(Object.keys(mealData)[0]);
+            if (
+              currentFormattedTime >= mealStartTime &&
+              currentFormattedTime <= mealEndTime
+            ) {
+              timingData[meal["meal_name"]] = [mealStartTime, mealEndTime];
+              currentMeal = meal["meal_name"];
             }
 
-            // Populate dishesData based on the current meal
-            if (meal["Name"] === selectedMeal) {
-              for (const station of meal["Stations"]) {
-                dishesData[station["Name"]] = station["Items"];
+            if (meal["meal_name"] === currentMeal) {
+              for (const station of meal["stations"]) {
+                for (const item of station["items"]) {
+                  ratings += item["avg"] > 0 ? item["avg"] : 0;
+                  numDishes += item["reviews"] > 0 ? 1 : 0;
+                }
               }
             }
+            const currentHour = date.getHours();
+            if (currentHour >= 21) {
+              date = new Date(date.setDate(date.getDate() + 1));
+            }
           } else {
-            mealData[meal["Name"]] = ["Closed", "Closed"];
+            // Handle closed dining court
           }
         }
 

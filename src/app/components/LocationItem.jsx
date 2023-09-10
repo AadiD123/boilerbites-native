@@ -9,9 +9,7 @@ export default function LocationItem(props) {
         <img alt={`${props.location}`} src={`/assets/${props.location}.png`} />
       </IonThumbnail>
       <IonLabel>{props.location}</IonLabel>
-      <IonLabel>
-        {props.openTime} - {props.closeTime}
-      </IonLabel>
+      <IonLabel>{props.timings}</IonLabel>
       <LocationRating
         location={`${props.location}`}
         totalAvgRating={props.avgRating}
