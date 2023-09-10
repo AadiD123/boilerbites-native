@@ -39,9 +39,8 @@ async function addDishIfNotExists(id, pool) {
     const jsonData = await response.json();
 
     const insertQuery =
-      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    console.log(jsonData);
+      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = id";
+      
     const data = [
       jsonData.ID,
       jsonData.Name,
@@ -112,13 +111,15 @@ async function addDishIfNotExists(id, pool) {
 }
 
 async function processMeals(data, pool) {
+  const dishPromises = [];
   for (const meal of data.Meals) {
     if (meal["Status"] == "Open") {
       for (const station of meal["Stations"]) {
         for (const item of station["Items"]) {
           const dishId = item.ID;
           try {
-            addDishIfNotExists(dishId, pool);
+            const promise = addDishIfNotExists(dishId, pool);
+            dishPromises.push(promise);
           } catch (error) {
             console.error("Error processing dish:", error);
           }
@@ -126,6 +127,7 @@ async function processMeals(data, pool) {
       }
     }
   }
+  await Promise.all(dishPromises);
 }
 
 async function getLocationData(req, res) {
