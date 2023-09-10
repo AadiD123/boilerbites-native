@@ -88,14 +88,18 @@ async function getDiningCourtRating(req, res) {
 
       try {
         const [filtered, _] = await connection.query(query, [dishIds]);
-        if (filtered.length === 0) {
+        const filteredDishes = filtered.filter(dish => dish.average_stars !== null);
+
+        if (filteredDishes.length === 0) {
           return res
             .status(404)
             .json({ error: "No ratings found for any dish" });
         }
 
-        const sum = filtered.reduce((acc, dish) => acc + dish.average_stars, 0);
-        const num_dishes = filtered.length;
+        console.log(filteredDishes);
+
+        const sum = filteredDishes.reduce((acc, dish) => acc + dish.average_stars, 0);
+        const num_dishes = filteredDishes.length;
         const averageStars = sum / num_dishes;
 
         res.status(200).json({ averageStars });

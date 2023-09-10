@@ -33,7 +33,6 @@ const createRating = async (req, res) => {
     const insertQuery =
       "INSERT INTO boilerbites.ratings (dish_id, stars) VALUES (?, ?)";
     const results = await connection.query(insertQuery, [dish_id, stars]);
-    console.log(results);
     res.status(200).json(results);
 
     connection.release();
