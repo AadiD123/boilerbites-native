@@ -89,7 +89,6 @@ async function addDishIfNotExists(id, pool) {
       const exists = existsResults[0].count > 0;
 
       if (!exists) {
-        // Insert the dish data if it doesn't exist
         await connection.query(insertQuery, data);
         console.log(
           `Successfully inserted data for dish with ID ${jsonData.ID}`
@@ -128,56 +127,6 @@ async function processMeals(data, pool) {
     }
   }
 }
-// async function getLocationData(req, res) {
-//   const { location, date } = req.params;
-//   const filters = {
-//     vegetarian: "vegetarian = true",
-//     vegan: "vegan = true",
-//     "no beef": "beef = false",
-//     "no pork": "pork = false",
-//     "gluten-free": "gluten = false",
-//   };
-//   const db = req.db;
-//   var restrictions = req.query.restrict;
-//   restrictions = restrictions.split(",");
-//   var query = "SELECT id FROM boilerbites.dishes WHERE ";
-//   for (var r in restrictions) {
-//     query += filters[restrictions[r]];
-//     if (parseInt(r) !== restrictions.length - 1) {
-//       query += " AND ";
-//     }
-//   }
-//   db.query(query, (error, results) => {
-//     if (error) {
-//       console.error("Error querying dishes:", error);
-//     } else {
-//       var ids = [];
-//       for (var i in results) {
-//         ids.push(results[i].id);
-//       }
-//       console.log(ids);
-//     }});
-//   const url =
-//     "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
-//   try {
-//     const response = await fetch(url);
-//     if (response.status === 200) {
-//       const jsonData = await response.json();
-//       processMeals(jsonData, db)
-//         .then(() => {
-//           console.log("Processing completed.");
-//         })
-//         .catch((error) => {
-//           console.error("Error processing meals:", error);
-//         });
-//       res.json(jsonData);
-//     } else {
-//       console.log("GET request failed. Status Code:", response.status);
-//     }
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//   }
-// }
 
 async function getLocationData(req, res) {
   const { location, date } = req.params;
