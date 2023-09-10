@@ -44,15 +44,15 @@ async function addDishIfNotExists(id, pool) {
       jsonData.ID,
       jsonData.Name,
       jsonData.IsVegetarian,
-      jsonData.Allergens[11].Value,
-      !jsonData.IsVegetarian && (await hasPig(jsonData)),
-      !jsonData.IsVegetarian && (await hasCow(jsonData)),
-      jsonData.Allergens[3].Value,
-      jsonData.Allergens[9].Value || jsonData.Allergens[5].Value,
-      jsonData.Nutrition[1].Value,
-      jsonData.Nutrition[3].Value,
-      jsonData.Nutrition[7].Value,
-      jsonData.Nutrition[11].Value,
+      jsonData.Allergens && jsonData.Allergens[11] ? jsonData.Allergens[11].Value : null,
+      (!jsonData.IsVegetarian && jsonData.Nutrition) ? await hasPig(jsonData) : null,
+      (!jsonData.IsVegetarian && jsonData.Nutrition) ? await hasCow(jsonData) : null,
+      jsonData.Allergens && jsonData.Allergens[3] ? jsonData.Allergens[3].Value : null,
+      jsonData.Allergens && ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) || (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+      jsonData.Nutrition && jsonData.Nutrition[1] ? jsonData.Nutrition[1].Value : null,
+      jsonData.Nutrition && jsonData.Nutrition[3] ? jsonData.Nutrition[3].Value : null,
+      jsonData.Nutrition && jsonData.Nutrition[7] ? jsonData.Nutrition[7].Value : null,
+      jsonData.Nutrition && jsonData.Nutrition[11] ? jsonData.Nutrition[11].Value : null,
     ];
 
     const connection = await pool.getConnection();
@@ -157,6 +157,7 @@ async function getLocationData(req, res) {
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
+      processMeals(jsonData, pool);
       const dishes = await fetchRatingsForDishes(jsonData, restrictions, pool);
       const finalDishData = enhanceDishData(jsonData, dishes);
 
