@@ -14,6 +14,12 @@ import {
   IonThumbnail,
   IonText,
 } from "@ionic/react";
+
+import { styled } from "@mui/material/styles";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import Rating from "@mui/material/Rating";
+
 import "./Home.css";
 import React, { useState, useEffect } from "react";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
@@ -21,6 +27,7 @@ import FoodCourtCard from "../components/FoodCourtCard";
 import LocationRating from "../components/LocationRating";
 import LocationItem from "../components/LocationItem";
 import { get } from "mongoose";
+import Restrictions from "../components/Restrictions";
 
 const Home = () => {
   // const [currentMeal, setCurrentMeal] = useState("");
@@ -155,6 +162,19 @@ const Home = () => {
   const [locationRatings, setLocationRatings] = useState({});
   const [locationTimings, setLocationTimings] = useState({});
 
+  const StyledStarIcon = styled(StarIcon)({
+    color: "black", // Change to the desired color
+  });
+
+  const StyledStarBorderIcon = styled(StarBorderIcon)({
+    color: "#8e6f3e", // Change to the desired color
+  });
+
+  const customIcons = {
+    filled: <StyledStarIcon fontSize="inherit" />,
+    empty: <StyledStarBorderIcon fontSize="inherit" />,
+  };
+
   const getDate = () => {
     const date = new Date();
     const year = date.getFullYear();
@@ -209,8 +229,10 @@ const Home = () => {
             ? `http://localhost:4000/api/dinings/rating/${location}/${date}`
             : `http://localhost:4000/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
         );
+
         if (response.ok) {
           const data = await response.json();
+          // console.log("called ratings", location, data);
           setLocationRatings((prevRatings) => ({
             ...prevRatings,
             [location]: data.averageStars,
@@ -284,7 +306,7 @@ const Home = () => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
     });
-  }, []);
+  }, [selectedOptions]);
 
   const handleSelectionChange = (event) => {
     setSelectedOptions(event.target.value);
@@ -303,7 +325,7 @@ const Home = () => {
             <IonTitle size="large">Boiler Bites</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <div className="home-dropdown">
+        {/* <div className="home-dropdown">
           <FormControl fullWidth>
             <InputLabel>Restrictions</InputLabel>
             <Select
@@ -319,6 +341,14 @@ const Home = () => {
               ))}
             </Select>
           </FormControl>
+          
+        </div> */}
+        <div>
+          <Restrictions
+            options={options}
+            selectedOptions={selectedOptions}
+            handleSelectionChange={handleSelectionChange}
+          />
         </div>
 
         <IonCard>
@@ -328,12 +358,21 @@ const Home = () => {
           <IonCardContent>
             <IonList>
               {locations.map((location, index) => (
-                <LocationItem
-                  key={index}
-                  location={location}
-                  timings={locationTimings[location]}
-                  totalAvgRating={locationRatings[location]}
-                />
+                <IonItem routerLink={`/${location}`} key={index}>
+                  <IonThumbnail slot="start">
+                    <img alt={`${location}`} src={`/assets/${location}.png`} />
+                  </IonThumbnail>
+                  <IonLabel>{location}</IonLabel>
+                  <IonLabel>{locationTimings[location]}</IonLabel>
+                  <Rating
+                    name="read-only"
+                    value={locationRatings[location] || 0}
+                    readOnly
+                    precision={0.1}
+                    emptyIcon={customIcons.empty}
+                    icon={customIcons.filled}
+                  />
+                </IonItem>
               ))}
             </IonList>
           </IonCardContent>
@@ -345,12 +384,21 @@ const Home = () => {
           <IonCardContent>
             <IonList>
               {quickBites.map((location, index) => (
-                <LocationItem
-                  key={index}
-                  location={location}
-                  timings={locationTimings[location]}
-                  totalAvgRating={locationRatings[location]}
-                />
+                <IonItem routerLink={`/${location}`} key={index}>
+                  <IonThumbnail slot="start">
+                    <img alt={`${location}`} src={`/assets/${location}.png`} />
+                  </IonThumbnail>
+                  <IonLabel>{location}</IonLabel>
+                  <IonLabel>{locationTimings[location]}</IonLabel>
+                  <Rating
+                    name="read-only"
+                    value={locationRatings[location] || 0}
+                    readOnly
+                    precision={0.1}
+                    emptyIcon={customIcons.empty}
+                    icon={customIcons.filled}
+                  />
+                </IonItem>
               ))}
             </IonList>
           </IonCardContent>

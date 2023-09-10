@@ -38,23 +38,15 @@ import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import FoodCourtBar from "../components/FoodCourtBar";
 import { set } from "mongoose";
+import Restrictions from "../components/Restrictions";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
 
   const [meals, setMeals] = useState([]);
   const [mealDict, setMealDict] = useState({});
-
-  const getDate = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1);
-    const day = String(date.getDate());
-    const formattedDate = `${year}-${month}-${day}`;
-
-    return formattedDate;
-  };
 
   const getCurrentTime = () => {
     const currentTime = new Date();
@@ -88,11 +80,14 @@ export default function DiningCourtPage(props) {
   };
 
   useEffect(() => {
-    const date = getDate();
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1);
+    const day = String(selectedDate.getDate());
+    const formattedDate = `${year}-${month}-${day}`;
 
     const fetchCurrentMeal = async () => {
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${props.location}/${date}/`
+        `http://localhost:4000/api/dishes/${props.location}/${formattedDate}/`
       );
       if (response.ok) {
         const data = await response.json();
@@ -121,11 +116,69 @@ export default function DiningCourtPage(props) {
       }
     };
 
+    const fetchLocationTimings = async (location) => {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/dinings/timing/${location}/${date}`
+        );
+        if (response.ok) {
+          const locationTimes = await response.json();
+
+          const currentTime = getCurrentTime(date);
+          var closestNextOpenTime = currentTime;
+
+          for (const timing of locationTimes) {
+            if (timing.status === "Open") {
+              // check if current time is within meal time
+              if (
+                currentTime >= timing.timing[0] &&
+                currentTime <= timing.timing[1]
+              ) {
+                // convert timing to 12 hour format
+                const startTime = convertTo12HourFormat(timing.timing[0]);
+                const endTime = convertTo12HourFormat(timing.timing[1]);
+                setLocationTimings((prevTimings) => ({
+                  ...prevTimings,
+                  [location]: "Open till " + endTime,
+                }));
+              }
+
+              if (currentTime <= timing.timing[0]) {
+                if (
+                  closestNextOpenTime === currentTime ||
+                  timing.timing[0] < closestNextOpenTime
+                ) {
+                  closestNextOpenTime = timing.timing[0];
+                }
+              }
+            }
+          }
+
+          // locationTimings[location] == null &&
+          // closestNextOpenTime === currentTime
+          //   ? setLocationTimings((prevTimings) => ({
+          //       ...prevTimings,
+          //       [location]: "Closed for rest of today",
+          //     }))
+          //   : setLocationTimings((prevTimings) => ({
+          //       ...prevTimings,
+          //       [location]: "Closed, will open at " + closestNextOpenTime,
+          //     }));
+        }
+      } catch (error) {
+        console.error("Error fetching location times:", error);
+      }
+    };
+
     fetchCurrentMeal();
   }, [selectedDate, selectedMeal]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
+  };
+
+  const handleSelectionChange = (event) => {
+    setSelectedOptions(event.target.value);
   };
 
   return (
@@ -164,6 +217,11 @@ export default function DiningCourtPage(props) {
                   ))}
                 </Select>
               </FormControl>
+              {/* <Restrictions
+                options={Object.keys(mealDict)}
+                selectedOption={selectedMeal}
+                handleSelectionChange={handleSelectionChange}
+              /> */}
             </IonRow>
           </IonGrid>
         </IonItem>

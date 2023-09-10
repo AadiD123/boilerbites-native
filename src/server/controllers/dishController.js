@@ -40,8 +40,6 @@ async function addDishIfNotExists(id, pool) {
 
     const insertQuery =
       "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    console.log(jsonData);
     const data = [
       jsonData.ID,
       jsonData.Name,
