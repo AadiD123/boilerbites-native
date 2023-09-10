@@ -1,10 +1,11 @@
 const getRatings = async (req, res) => {
   const pool = req.app.locals.pool;
-  
+
   try {
     const connection = await pool.getConnection();
     const { dish_id } = req.params;
-    const query = "SELECT AVG(stars) AS average_stars, COUNT(*) AS num_rows FROM boilerbites.ratings WHERE dish_id = ?";
+    const query =
+      "SELECT AVG(stars) AS average_stars, COUNT(*) AS num_rows FROM boilerbites.ratings WHERE dish_id = ?";
     const results = await connection.query(query, [dish_id]);
 
     if (results.length > 0 && results[0].average_stars !== null) {
@@ -25,13 +26,14 @@ const getRatings = async (req, res) => {
 // create a review
 const createRating = async (req, res) => {
   const pool = req.app.locals.pool;
-  const { stars, dish_id } = req.body;
+  const { dish_id, stars } = req.body;
 
   try {
     const connection = await pool.getConnection();
-    const insertQuery = "INSERT INTO boilerbites.ratings (stars, dish_id) VALUES (?, ?)";
-    const results = await connection.query(insertQuery, [stars, dish_id]);
-
+    const insertQuery =
+      "INSERT INTO boilerbites.ratings (dish_id, stars) VALUES (?, ?)";
+    const results = await connection.query(insertQuery, [dish_id, stars]);
+    console.log(results);
     res.status(200).json(results);
 
     connection.release();
@@ -65,11 +67,8 @@ const updateRating = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   createRating,
   getRatings,
-  updateRating
+  updateRating,
 };

@@ -25,8 +25,9 @@ export default function FoodCourtBar(props) {
               <DishItem
                 key={index}
                 name={dish.dish_name}
-                likes={dish.likes}
-                dislikes={dish.dislikes}
+                id={dish.dish_id}
+                averageRating={dish.avg}
+                reviews={dish.reviews}
               />
             ))
           ) : (

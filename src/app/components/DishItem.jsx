@@ -24,31 +24,6 @@ const DishItem = (props) => {
   }, [props.id]); // Only update the effect when props.id changes
 
   const updateExistingRating = async (selectedRating, ratingId) => {
-    console.log("update existing rating");
-
-    var avgRating = 0.0;
-    var numRatings = 0;
-
-    // fetch to get the latest dish info
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}`
-      );
-
-      if (response.ok) {
-        const jsonResponse = await response.json();
-        avgRating = jsonResponse.averageRating;
-        numRatings = jsonResponse.numRatings;
-      } else {
-        console.error("Failed to fetch latest dish info");
-      }
-    } catch (error) {
-      console.error("Error occurred while fetching dish info:", error);
-    }
-
-    console.log("updated dish info", avgRating, numRatings);
-
-    // Update the existing rating on the server
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/ratings/${ratingId}`,
@@ -58,7 +33,9 @@ const DishItem = (props) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            stars: selectedRating,
+            stars:
+              (props.avg * props.reviews + selectedRating) /
+              (props.reviews + 1),
           }),
         }
       );
@@ -74,29 +51,6 @@ const DishItem = (props) => {
         // Update the rating in localStorage
         localStorage.setItem(ratingId, selectedRating.toString());
         console.log("new avgRating", avgRating);
-        // Update the dish with the existing average rating
-        try {
-          const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                averageRating: avgRating,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log(`Updated dish's average rating: ${selectedRating}`);
-          } else {
-            console.error("Failed to update dish's average rating.");
-          }
-        } catch (error) {
-          console.error("Error occurred while updating dish:", error);
-        }
       } else {
         console.error("Failed to update rating on the server.");
       }
@@ -110,7 +64,7 @@ const DishItem = (props) => {
     // Create a new rating on the server
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/ratings/`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/ratings/${props.id}`,
         {
           method: "POST",
           headers: {
@@ -136,31 +90,7 @@ const DishItem = (props) => {
       console.error("Error occurred while sending rating:", error);
     }
 
-    // Update the dish with the new average rating
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            numRatings: props.num + 1,
-            averageRating:
-              (props.avg * props.num + selectedRating) / (props.num + 1),
-          }),
-        }
-      );
-
-      if (response.ok) {
-        console.log(`Updated dish's average rating: ${selectedRating}`);
-      } else {
-        console.error("Failed to update dish's average rating.");
-      }
-    } catch (error) {
-      console.error("Error occurred while updating dish:", error);
-    }
+    // patch request to update the dish with the new average rating
   };
 
   const handleStarClick = async (selectedRating) => {
