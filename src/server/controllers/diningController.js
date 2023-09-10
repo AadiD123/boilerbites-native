@@ -96,9 +96,7 @@ async function getDiningCourtRating(req, res) {
             .json({ error: "No ratings found for any dish" });
         }
 
-        console.log(filteredDishes);
-
-        const sum = filteredDishes.reduce((acc, dish) => acc + dish.average_stars, 0);
+        const sum = filteredDishes.reduce((acc, dish) => acc + parseInt(dish.average_stars), 0);
         const num_dishes = filteredDishes.length;
         const averageStars = sum / num_dishes;
 
