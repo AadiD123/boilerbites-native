@@ -54,7 +54,7 @@ export default function DiningCourtPage(props) {
     "no beef",
     "no pork",
     "gluten-free",
-    "nuts",
+    "no nuts",
   ];
 
   const getCurrentTime = () => {
@@ -89,17 +89,23 @@ export default function DiningCourtPage(props) {
   };
 
   useEffect(() => {
+    console.log("hello");
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1);
     const day = String(selectedDate.getDate());
     const formattedDate = `${year}-${month}-${day}`;
 
+    const selectedOptionsQuery = selectedOptions.join(",");
+
     const fetchCurrentMeal = async () => {
       const response = await fetch(
-        `http://localhost:4000/api/dishes/${props.location}/${formattedDate}/`
+        selectedOptionsQuery === ""
+          ? `http://localhost:4000/api/dishes/${props.location}/${formattedDate}`
+          : `http://localhost:4000/api/dishes/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();
+
         const mealDict = {};
 
         for (const meal of data) {
@@ -128,7 +134,9 @@ export default function DiningCourtPage(props) {
     const fetchLocationTimings = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}`
+          selectedOptionsQuery === ""
+            ? `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}`
+            : `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
         );
         if (response.ok) {
           const locationTimes = await response.json();
@@ -164,7 +172,7 @@ export default function DiningCourtPage(props) {
 
     fetchCurrentMeal();
     fetchLocationTimings();
-  }, [selectedDate, selectedMeal]);
+  }, [selectedDate, selectedMeal, selectedOptions]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -215,7 +223,7 @@ export default function DiningCourtPage(props) {
               </FormControl>
               <Restrictions
                 options={options}
-                selectedOption={selectedOptions}
+                selectedOptions={selectedOptions}
                 handleSelectionChange={handleSelectionChange}
               />
             </IonRow>
@@ -232,16 +240,20 @@ export default function DiningCourtPage(props) {
                 <IonList>
                   {stationData.items != null &&
                   Array.isArray(stationData.items) ? (
-                    stationData.items.map((dish, index) => (
-                      <DishItem
-                        key={index}
-                        name={dish.dish_name}
-                        id={dish.id}
-                        avg={dish.avg}
-                        reviews={dish.reviews}
-                        date={selectedDate}
-                      />
-                    ))
+                    stationData.items.map((dish, index) =>
+                      dish ? (
+                        <DishItem
+                          key={index}
+                          name={dish.dish_name}
+                          id={dish.id}
+                          avg={dish.avg}
+                          reviews={dish.reviews}
+                          date={selectedDate}
+                        />
+                      ) : (
+                        <p></p>
+                      )
+                    )
                   ) : (
                     <p></p>
                   )}

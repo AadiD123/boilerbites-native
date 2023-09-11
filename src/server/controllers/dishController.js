@@ -40,7 +40,7 @@ async function addDishIfNotExists(id, pool) {
 
     const insertQuery =
       "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = id";
-      
+
     const data = [
       jsonData.ID,
       jsonData.Name,
@@ -124,43 +124,43 @@ async function addDish(id, pool) {
 
     const insertQuery =
       "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-      const data = [
-        jsonData.ID,
-        jsonData.Name,
-        jsonData.IsVegetarian,
-        jsonData.Allergens && jsonData.Allergens[11]
-          ? jsonData.Allergens[11].Value
-          : null,
-        !jsonData.IsVegetarian &&
-        jsonData.Nutrition &&
-        jsonData.Nutrition.Ingredients
-          ? await hasPig(jsonData)
-          : null,
-        !jsonData.IsVegetarian &&
-        jsonData.Nutrition &&
-        jsonData.Nutrition.Ingredients
-          ? await hasCow(jsonData)
-          : null,
-        jsonData.Allergens && jsonData.Allergens[3]
-          ? jsonData.Allergens[3].Value
-          : null,
-        jsonData.Allergens &&
-          ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
-            (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
-        jsonData.Nutrition && jsonData.Nutrition[1]
-          ? jsonData.Nutrition[1].Value
-          : null,
-        jsonData.Nutrition && jsonData.Nutrition[3]
-          ? jsonData.Nutrition[3].Value
-          : null,
-        jsonData.Nutrition && jsonData.Nutrition[7]
-          ? jsonData.Nutrition[7].Value
-          : null,
-        jsonData.Nutrition && jsonData.Nutrition[11]
-          ? jsonData.Nutrition[11].Value
-          : null,
-      ];
-      const connection = await pool.getConnection();
+    const data = [
+      jsonData.ID,
+      jsonData.Name,
+      jsonData.IsVegetarian,
+      jsonData.Allergens && jsonData.Allergens[11]
+        ? jsonData.Allergens[11].Value
+        : null,
+      !jsonData.IsVegetarian &&
+      jsonData.Nutrition &&
+      jsonData.Nutrition.Ingredients
+        ? await hasPig(jsonData)
+        : null,
+      !jsonData.IsVegetarian &&
+      jsonData.Nutrition &&
+      jsonData.Nutrition.Ingredients
+        ? await hasCow(jsonData)
+        : null,
+      jsonData.Allergens && jsonData.Allergens[3]
+        ? jsonData.Allergens[3].Value
+        : null,
+      jsonData.Allergens &&
+        ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
+          (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+      jsonData.Nutrition && jsonData.Nutrition[1]
+        ? jsonData.Nutrition[1].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[3]
+        ? jsonData.Nutrition[3].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[7]
+        ? jsonData.Nutrition[7].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[11]
+        ? jsonData.Nutrition[11].Value
+        : null,
+    ];
+    const connection = await pool.getConnection();
     await connection.query(insertQuery, data, (error) => {
       if (error) {
         console.error("Error inserting data:", error);
@@ -216,11 +216,9 @@ async function getLocationData(req, res) {
   const restrictions = req.query.restrict?.split(",") || [];
   const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
 
-  let connection; // Declare the connection variable outside try-catch
+  const connection = await pool.getConnection(); // Acquire the connection
 
   try {
-    connection = await pool.getConnection(); // Acquire the connection
-
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
@@ -236,9 +234,7 @@ async function getLocationData(req, res) {
     console.error("Error fetching data:", error);
     res.status(500).send("Internal Server Error");
   } finally {
-    if (connection) {
-      connection.release(); // Release the connection in the finally block
-    }
+    connection.release();
   }
 }
 
@@ -250,7 +246,7 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
-    "no nuts": "nuts = false"
+    "no nuts": "nuts = false",
   };
   const query = `
   SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars, COUNT(r.stars) AS num_ratings
@@ -277,8 +273,9 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
     [results, _] = await connection.query(query, [dishIds]);
   } catch (err) {
     console.error("Error fetching rating:", err);
+  } finally {
+    connection.release();
   }
-  connection.release();
   return results;
 }
 
