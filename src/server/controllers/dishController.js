@@ -120,12 +120,14 @@ async function processMeals(data, pool) {
             const exists = await isDishExists(dishId, pool);
 
             if (!exists) {
-              console.log(`Dish with ID ${dishId} doesn't exist in the database. Adding...`);
+              console.log(
+                `Dish with ID ${dishId} doesn't exist in the database. Adding...`
+              );
               await addDish(dishId, pool);
               console.log(`Dish with ID ${dishId} added to the database.`);
             }
           } catch (error) {
-            console.error('Error processing dish:', error);
+            console.error("Error processing dish:", error);
           }
         }
       }
@@ -151,7 +153,10 @@ async function getLocationData(req, res) {
         );
         if (rows.length === 0) {
           await processMeals(jsonData, pool);
-          await connection.query("INSERT INTO boilerbites.timings (dining_court, date) VALUES (?, ?)", [location, date]);
+          await connection.query(
+            "INSERT INTO boilerbites.timings (dining_court, date) VALUES (?, ?)",
+            [location, date]
+          );
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -179,7 +184,7 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
-    "no nuts": "nuts = false"
+    "no nuts": "nuts = false",
   };
   const query = `
   SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars, COUNT(r.stars) AS num_ratings
@@ -206,8 +211,9 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
     [results, _] = await connection.query(query, [dishIds]);
   } catch (err) {
     console.error("Error fetching rating:", err);
+  } finally {
+    connection.release();
   }
-  connection.release();
   return results;
 }
 

@@ -50,13 +50,13 @@ const App = () => (
         <Route exact path="/1bowl">
           <DiningCourtPage location="1Bowl" />
         </Route>
-        <Route exact path="/petesza">
+        <Route exact path="/Pete's Za">
           <DiningCourtPage location="Pete's Za" />
         </Route>
-        <Route exact path="/theburrow">
+        <Route exact path="/The Burrow">
           <DiningCourtPage location="The Burrow" />
         </Route>
-        <Route exact path="/thegatheringplace">
+        <Route exact path="/The Gathering Place">
           <DiningCourtPage location="The Gathering Place" />
         </Route>
         <Route exact path="/">

@@ -38,7 +38,7 @@ const Home = () => {
     "no beef",
     "no pork",
     "gluten-free",
-    "nuts",
+    "no nuts",
   ];
 
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -227,11 +227,11 @@ const Home = () => {
           
         </div> */}
         <div>
-          <Restrictions
+          {/* <Restrictions
             options={options}
             selectedOptions={selectedOptions}
             handleSelectionChange={handleSelectionChange}
-          />
+          /> */}
         </div>
 
         <IonCard>
@@ -239,9 +239,18 @@ const Home = () => {
             <IonCardTitle>Dining Courts</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            <IonList>
+            <IonList style={{ margin: "0px", padding: "0px" }}>
               {locations.map((location, index) => (
-                <IonItem routerLink={`/${location}`} key={index}>
+                <IonItem
+                  routerLink={`/${location}`}
+                  key={index}
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    "--detail-icon-color": "transparent",
+                    padding: "0px",
+                  }}
+                >
                   <IonThumbnail slot="start">
                     <img alt={`${location}`} src={`/assets/${location}.png`} />
                   </IonThumbnail>
