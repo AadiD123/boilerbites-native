@@ -1,6 +1,4 @@
 const fetch = require("node-fetch");
-const mysql = require("mysql2/promise");
-const { Pool } = require("@mui/icons-material");
 
 async function getDiningTiming(req, res) {
   const { location, date } = req.params;
@@ -70,7 +68,6 @@ async function getDiningCourtRating(req, res) {
         // Handle the case where no dishes were found
         return res.status(404).json({ error: "No dishes found" });
       }
-      console.log(dishIds);
       let query = `
         SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars
         FROM boilerbites.dishes AS d
@@ -84,7 +81,6 @@ async function getDiningCourtRating(req, res) {
       query += `
         GROUP BY d.id, d.dish_name;
       `;
-      console.log(query);
 
       // Acquire a connection from the pool
       const connection = await pool.getConnection();
@@ -94,7 +90,6 @@ async function getDiningCourtRating(req, res) {
         const filteredDishes = filtered.filter(
           (dish) => dish.average_stars !== null
         );
-
         if (filteredDishes.length === 0) {
           return res
             .status(404)
@@ -102,7 +97,7 @@ async function getDiningCourtRating(req, res) {
         }
 
         const sum = filteredDishes.reduce(
-          (acc, dish) => acc + parseInt(dish.average_stars),
+          (acc, dish) => acc + parseFloat(dish.average_stars),
           0
         );
         const num_dishes = filteredDishes.length;
