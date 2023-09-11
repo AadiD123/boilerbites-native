@@ -163,6 +163,7 @@ async function fetchRatingsForDishes(jsonData, restrictions, pool) {
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
+    "no nuts": "nuts = false"
   };
   const query = `
   SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars, COUNT(r.stars) AS num_ratings

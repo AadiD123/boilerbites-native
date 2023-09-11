@@ -45,6 +45,7 @@ async function getDiningCourtRating(req, res) {
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
+    "no nuts": "nuts = false",
   };
   const pool = req.app.locals.pool;
   const restrictions = req.query.restrict?.split(",") || [];
@@ -69,12 +70,12 @@ async function getDiningCourtRating(req, res) {
         // Handle the case where no dishes were found
         return res.status(404).json({ error: "No dishes found" });
       }
-
+      console.log(dishIds);
       let query = `
         SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars
         FROM boilerbites.dishes AS d
         LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
-        WHERE d.id IN (${dishIds.map((id) => "?").join(", ")})`;
+        WHERE d.id IN (?)`;
 
       if (restrictions.length > 0) {
         query += " AND " + restrictions.map((r) => filters[r]).join(" AND ");
@@ -83,6 +84,7 @@ async function getDiningCourtRating(req, res) {
       query += `
         GROUP BY d.id, d.dish_name;
       `;
+      console.log(query);
 
       // Acquire a connection from the pool
       const connection = await pool.getConnection();
