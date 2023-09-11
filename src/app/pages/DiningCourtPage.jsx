@@ -36,17 +36,26 @@ import "./DiningCourtPage.css";
 // Components
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
-import FoodCourtBar from "../components/FoodCourtBar";
-import { set } from "mongoose";
+import DishItem from "../components/DishItem";
 import Restrictions from "../components/Restrictions";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [times, setTimes] = useState({});
 
-  const [meals, setMeals] = useState([]);
+  // const [meals, setMeals] = useState([]);
   const [mealDict, setMealDict] = useState({});
+
+  const options = [
+    "vegetarian",
+    "vegan",
+    "no beef",
+    "no pork",
+    "gluten-free",
+    "nuts",
+  ];
 
   const getCurrentTime = () => {
     const currentTime = new Date();
@@ -94,7 +103,7 @@ export default function DiningCourtPage(props) {
         const mealDict = {};
 
         for (const meal of data) {
-          setMeals((meals) => [...meals, meal["meal_name"]]);
+          // setMeals((meals) => [...meals, meal["meal_name"]]);
 
           if (selectedMeal == "") {
             setSelectedMeal(meal["meal_name"]);
@@ -116,18 +125,24 @@ export default function DiningCourtPage(props) {
       }
     };
 
-    const fetchLocationTimings = async (location) => {
+    const fetchLocationTimings = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/dinings/timing/${location}/${date}`
+          `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}`
         );
         if (response.ok) {
           const locationTimes = await response.json();
 
-          const currentTime = getCurrentTime(date);
-          var closestNextOpenTime = currentTime;
+          const currentTime = getCurrentTime(selectedDate);
 
           for (const timing of locationTimes) {
+            const startTime = convertTo12HourFormat(timing.timing[0]);
+            const endTime = convertTo12HourFormat(timing.timing[1]);
+            setTimes((otherTimes) => ({
+              ...otherTimes,
+              [timing["meal_name"]]: startTime + " - " + endTime,
+            }));
+
             if (timing.status === "Open") {
               // check if current time is within meal time
               if (
@@ -135,42 +150,20 @@ export default function DiningCourtPage(props) {
                 currentTime <= timing.timing[1]
               ) {
                 // convert timing to 12 hour format
-                const startTime = convertTo12HourFormat(timing.timing[0]);
-                const endTime = convertTo12HourFormat(timing.timing[1]);
-                setLocationTimings((prevTimings) => ({
-                  ...prevTimings,
-                  [location]: "Open till " + endTime,
-                }));
-              }
-
-              if (currentTime <= timing.timing[0]) {
-                if (
-                  closestNextOpenTime === currentTime ||
-                  timing.timing[0] < closestNextOpenTime
-                ) {
-                  closestNextOpenTime = timing.timing[0];
-                }
+                setSelectedMeal(timing["meal_name"]);
               }
             }
           }
-
-          // locationTimings[location] == null &&
-          // closestNextOpenTime === currentTime
-          //   ? setLocationTimings((prevTimings) => ({
-          //       ...prevTimings,
-          //       [location]: "Closed for rest of today",
-          //     }))
-          //   : setLocationTimings((prevTimings) => ({
-          //       ...prevTimings,
-          //       [location]: "Closed, will open at " + closestNextOpenTime,
-          //     }));
         }
       } catch (error) {
         console.error("Error fetching location times:", error);
       }
     };
 
+    console.log(times[selectedMeal]);
+
     fetchCurrentMeal();
+    fetchLocationTimings();
   }, [selectedDate, selectedMeal]);
 
   const handleDateChange = (selectedDate) => {
@@ -194,7 +187,10 @@ export default function DiningCourtPage(props) {
         <IonItem>
           <IonGrid>
             {selectedMeal != "" && mealDict[selectedMeal] != null ? (
-              <FoodCourtCard diningCourt={props.location} />
+              <FoodCourtCard
+                diningCourt={props.location}
+                timing={times[selectedMeal]}
+              />
             ) : (
               <FoodCourtCard diningCourt={props.location} />
             )}
@@ -217,22 +213,41 @@ export default function DiningCourtPage(props) {
                   ))}
                 </Select>
               </FormControl>
-              {/* <Restrictions
-                options={Object.keys(mealDict)}
-                selectedOption={selectedMeal}
+              <Restrictions
+                options={options}
+                selectedOption={selectedOptions}
                 handleSelectionChange={handleSelectionChange}
-              /> */}
+              />
             </IonRow>
           </IonGrid>
         </IonItem>
 
-        {selectedMeal != "" && mealDict[selectedMeal].length > 0 ? (
+        {selectedMeal != "" && mealDict[selectedMeal] != null ? (
           mealDict[selectedMeal].map((stationData) => (
-            <FoodCourtBar
-              key={stationData.stationName}
-              bar={stationData.stationName}
-              dishData={stationData.items}
-            />
+            <IonCard key={stationData.stationName}>
+              <IonCardHeader>
+                <IonCardTitle>{stationData.stationName}</IonCardTitle>
+              </IonCardHeader>
+              <IonCardContent style={{ paddingInline: "0px" }}>
+                <IonList>
+                  {stationData.items != null &&
+                  Array.isArray(stationData.items) ? (
+                    stationData.items.map((dish, index) => (
+                      <DishItem
+                        key={index}
+                        name={dish.dish_name}
+                        id={dish.id}
+                        avg={dish.avg}
+                        reviews={dish.reviews}
+                        date={selectedDate}
+                      />
+                    ))
+                  ) : (
+                    <p></p>
+                  )}
+                </IonList>
+              </IonCardContent>
+            </IonCard>
           ))
         ) : (
           <IonCard>

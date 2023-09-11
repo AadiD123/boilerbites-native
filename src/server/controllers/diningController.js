@@ -70,25 +70,28 @@ async function getDiningCourtRating(req, res) {
         return res.status(404).json({ error: "No dishes found" });
       }
 
-      const query = `
-  SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars
-  FROM boilerbites.dishes AS d
-  LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
-  WHERE d.id IN (?)
-  ${
-    restrictions.length > 0
-      ? "AND " + restrictions.map((r) => filters[r]).join(" AND ")
-      : ""
-  }
-  GROUP BY d.id, d.dish_name;
-`;
+      let query = `
+        SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars
+        FROM boilerbites.dishes AS d
+        LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
+        WHERE d.id IN (${dishIds.map((id) => "?").join(", ")})`;
+
+      if (restrictions.length > 0) {
+        query += " AND " + restrictions.map((r) => filters[r]).join(" AND ");
+      }
+
+      query += `
+        GROUP BY d.id, d.dish_name;
+      `;
 
       // Acquire a connection from the pool
       const connection = await pool.getConnection();
 
       try {
         const [filtered, _] = await connection.query(query, [dishIds]);
-        const filteredDishes = filtered.filter(dish => dish.average_stars !== null);
+        const filteredDishes = filtered.filter(
+          (dish) => dish.average_stars !== null
+        );
 
         if (filteredDishes.length === 0) {
           return res
@@ -96,7 +99,10 @@ async function getDiningCourtRating(req, res) {
             .json({ error: "No ratings found for any dish" });
         }
 
-        const sum = filteredDishes.reduce((acc, dish) => acc + parseInt(dish.average_stars), 0);
+        const sum = filteredDishes.reduce(
+          (acc, dish) => acc + parseInt(dish.average_stars),
+          0
+        );
         const num_dishes = filteredDishes.length;
         const averageStars = sum / num_dishes;
 

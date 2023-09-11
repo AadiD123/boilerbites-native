@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { IonItem, IonButton, IonLabel } from "@ionic/react";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { styled } from "@mui/material/styles";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Rating from "@mui/material/Rating";
 import { Drivers, Storage } from "@ionic/storage";
 
@@ -14,7 +17,9 @@ const DishItem = (props) => {
     await Haptics.impact({ style: ImpactStyle.Medium });
   };
 
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(props.avg);
+  const [starColor, setStarColor] = useState("black");
+  const [precision, setPrecision] = useState(0.1);
 
   useEffect(() => {
     // dish_id -> rating_id -> rating
@@ -96,6 +101,8 @@ const DishItem = (props) => {
   const handleStarClick = async (selectedRating) => {
     // Update local state
     setRating(selectedRating);
+    setStarColor("#daaa00");
+    setPrecision(1);
 
     // Check if a rating for this dish already exists
     const ratingId = await storage.get(props.id);
@@ -109,6 +116,19 @@ const DishItem = (props) => {
     }
   };
 
+  const StyledStarIcon = styled(StarIcon)({
+    color: starColor, // Change to the desired color
+  });
+
+  const StyledStarBorderIcon = styled(StarBorderIcon)({
+    color: "#8e6f3e", // Change to the desired color
+  });
+
+  const customIcons = {
+    filled: <StyledStarIcon fontSize="inherit" />,
+    empty: <StyledStarBorderIcon fontSize="inherit" />,
+  };
+
   return (
     <IonItem>
       <IonLabel>{props.name}</IonLabel>
@@ -116,6 +136,9 @@ const DishItem = (props) => {
         slot="end"
         name={`simple-controlled-${props.id}`}
         value={rating} // Use the controlled value from state
+        precision={precision}
+        emptyIcon={customIcons.empty}
+        icon={customIcons.filled}
         onChange={(event, newValue) => {
           handleStarClick(newValue);
           hapticsImpactMedium();
