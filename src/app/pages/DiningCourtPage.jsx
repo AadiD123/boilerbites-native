@@ -20,6 +20,7 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonLoading,
 } from "@ionic/react";
 
 import {
@@ -28,6 +29,7 @@ import {
   MenuItem,
   Select,
   Button,
+  CircularProgress,
 } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
@@ -168,8 +170,6 @@ export default function DiningCourtPage(props) {
       }
     };
 
-    console.log(times[selectedMeal]);
-
     fetchCurrentMeal();
     fetchLocationTimings();
   }, [selectedDate, selectedMeal, selectedOptions]);
@@ -194,7 +194,7 @@ export default function DiningCourtPage(props) {
       <IonContent>
         <IonItem>
           <IonGrid>
-            {selectedMeal != "" && mealDict[selectedMeal] != null ? (
+            {selectedMeal !== "" ? (
               <FoodCourtCard
                 diningCourt={props.location}
                 timing={times[selectedMeal]}
@@ -230,43 +230,50 @@ export default function DiningCourtPage(props) {
           </IonGrid>
         </IonItem>
 
-        {selectedMeal != "" && mealDict[selectedMeal] != null ? (
-          mealDict[selectedMeal].map((stationData) => (
-            <IonCard key={stationData.stationName}>
+        {selectedMeal !== "" ? (
+          mealDict[selectedMeal] != null ? (
+            mealDict[selectedMeal].map((stationData) => (
+              <IonCard key={stationData.stationName}>
+                <IonCardHeader>
+                  <IonCardTitle>{stationData.stationName}</IonCardTitle>
+                </IonCardHeader>
+                <IonCardContent style={{ paddingInline: "0px" }}>
+                  <IonList>
+                    {stationData.items != null &&
+                    Array.isArray(stationData.items) ? (
+                      stationData.items
+                        .filter((dish) => dish != null) // Remove any null or undefined dishes
+                        .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
+                        .map((dish, index) => (
+                          <DishItem
+                            key={index}
+                            name={dish.dish_name}
+                            id={dish.id}
+                            avg={dish.avg}
+                            reviews={dish.reviews}
+                            date={selectedDate}
+                          />
+                        ))
+                    ) : (
+                      <p></p>
+                    )}
+                  </IonList>
+                </IonCardContent>
+              </IonCard>
+            ))
+          ) : (
+            <IonCard>
               <IonCardHeader>
-                <IonCardTitle>{stationData.stationName}</IonCardTitle>
+                <IonCardSubtitle>No meals served</IonCardSubtitle>
               </IonCardHeader>
-              <IonCardContent style={{ paddingInline: "0px" }}>
-                <IonList>
-                  {stationData.items != null &&
-                  Array.isArray(stationData.items) ? (
-                    stationData.items.map((dish, index) =>
-                      dish ? (
-                        <DishItem
-                          key={index}
-                          name={dish.dish_name}
-                          id={dish.id}
-                          avg={dish.avg}
-                          reviews={dish.reviews}
-                          date={selectedDate}
-                        />
-                      ) : (
-                        <p></p>
-                      )
-                    )
-                  ) : (
-                    <p></p>
-                  )}
-                </IonList>
-              </IonCardContent>
             </IonCard>
-          ))
+          )
         ) : (
-          <IonCard>
-            <IonCardHeader>
-              <IonCardSubtitle>No meals served</IonCardSubtitle>
-            </IonCardHeader>
-          </IonCard>
+          <IonLoading
+            isOpen={selectedMeal === ""}
+            message="Loading..."
+            spinner="circles"
+          />
         )}
       </IonContent>
     </IonPage>

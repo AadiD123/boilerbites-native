@@ -2,6 +2,15 @@
   margin: 1em;
 }
 
+.home-list-item-cont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 1em;
+}
+
 /* In your CSS file */
 .custom-list-item {
   --inner-padding-start: 16px; /* Adjust padding as needed */
