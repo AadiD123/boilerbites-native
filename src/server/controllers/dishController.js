@@ -227,7 +227,6 @@ async function getLocationData(req, res) {
       processMeals(jsonData, pool);
       const dishes = await fetchRatingsForDishes(jsonData, restrictions, pool);
       const finalDishData = enhanceDishData(jsonData, dishes);
-
       res.json(finalDishData);
     } else {
       console.log("GET request failed. Status Code:", response.status);
@@ -300,7 +299,7 @@ function enhanceDishData(mealData, dishes) {
             reviews: dish.num_ratings,
           };
         }
-      });
+      }).filter(Boolean);
 
       return { station_name: stationName, items };
     });
@@ -310,6 +309,7 @@ function enhanceDishData(mealData, dishes) {
     };
   });
 }
+
 module.exports = {
   getLocationData,
 };
