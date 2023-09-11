@@ -110,16 +110,97 @@ async function addDishIfNotExists(id, pool) {
   }
 }
 
+async function addDish(id, pool) {
+  const url = "https://api.hfs.purdue.edu/menus/v2/items/" + id;
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+  };
+
+  const response = await fetch(url, { headers });
+
+  if (response.status === 200) {
+    const jsonData = await response.json();
+
+    const insertQuery =
+      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      const data = [
+        jsonData.ID,
+        jsonData.Name,
+        jsonData.IsVegetarian,
+        jsonData.Allergens && jsonData.Allergens[11]
+          ? jsonData.Allergens[11].Value
+          : null,
+        !jsonData.IsVegetarian &&
+        jsonData.Nutrition &&
+        jsonData.Nutrition.Ingredients
+          ? await hasPig(jsonData)
+          : null,
+        !jsonData.IsVegetarian &&
+        jsonData.Nutrition &&
+        jsonData.Nutrition.Ingredients
+          ? await hasCow(jsonData)
+          : null,
+        jsonData.Allergens && jsonData.Allergens[3]
+          ? jsonData.Allergens[3].Value
+          : null,
+        jsonData.Allergens &&
+          ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
+            (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+        jsonData.Nutrition && jsonData.Nutrition[1]
+          ? jsonData.Nutrition[1].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[3]
+          ? jsonData.Nutrition[3].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[7]
+          ? jsonData.Nutrition[7].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[11]
+          ? jsonData.Nutrition[11].Value
+          : null,
+      ];
+      const connection = await pool.getConnection();
+    await connection.query(insertQuery, data, (error) => {
+      if (error) {
+        console.error("Error inserting data:", error);
+      }
+    });
+    connection.release();
+  } else {
+    console.log("GET request failed. Status Code:", response.status);
+  }
+}
+
+async function isDishExists(dishId, pool) {
+  const connection = await pool.getConnection();
+  return new Promise((resolve, reject) => {
+    const query =
+      "SELECT COUNT(*) AS count FROM boilerbites.dishes WHERE id = ?";
+    connection.query(query, [dishId], (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results[0].count > 0);
+      }
+      connection.release();
+    });
+  });
+}
+
 async function processMeals(data, pool) {
-  const dishPromises = [];
   for (const meal of data.Meals) {
     if (meal["Status"] == "Open") {
       for (const station of meal["Stations"]) {
         for (const item of station["Items"]) {
           const dishId = item.ID;
           try {
-            const promise = addDishIfNotExists(dishId, pool);
-            dishPromises.push(promise);
+            const exists = await isDishExists(dishId, pool);
+
+            if (!exists) {
+              console.log("adding");
+              await addDish(dishId, pool);
+            }
           } catch (error) {
             console.error("Error processing dish:", error);
           }
@@ -127,7 +208,6 @@ async function processMeals(data, pool) {
       }
     }
   }
-  await Promise.all(dishPromises);
 }
 
 async function getLocationData(req, res) {
@@ -136,7 +216,11 @@ async function getLocationData(req, res) {
   const restrictions = req.query.restrict?.split(",") || [];
   const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
 
+  let connection; // Declare the connection variable outside try-catch
+
   try {
+    connection = await pool.getConnection(); // Acquire the connection
+
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
@@ -152,6 +236,10 @@ async function getLocationData(req, res) {
   } catch (error) {
     console.error("Error fetching data:", error);
     res.status(500).send("Internal Server Error");
+  } finally {
+    if (connection) {
+      connection.release(); // Release the connection in the finally block
+    }
   }
 }
 
