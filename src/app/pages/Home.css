@@ -1,3 +1,22 @@
 .home-dropdown {
   margin: 1em;
 }
+
+.home-list-item-cont {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 1em;
+}
+
+/* In your CSS file */
+.custom-list-item {
+  --inner-padding-start: 16px; /* Adjust padding as needed */
+  --inner-padding-end: 16px; /* Adjust padding as needed */
+  --inner-border-width: 0; /* Remove inner border */
+  --inner-border-radius: 0; /* Remove inner border radius */
+  --detail-icon-size: 0; /* Remove detail icon */
+  --detail-icon-color: transparent; /* Hide detail icon */
+}

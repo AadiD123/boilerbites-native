@@ -23,9 +23,10 @@ export default function FoodCourtBar(props) {
             props.dishData.map((dish, index) => (
               <DishItem
                 key={index}
-                name={dish.Name}
-                likes={dish.likes}
-                dislikes={dish.dislikes}
+                name={dish.dish_name}
+                id={dish.id}
+                avg={dish.avg}
+                reviews={dish.reviews}
               />
             ))
           ) : (

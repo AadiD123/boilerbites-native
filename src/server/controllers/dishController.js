@@ -1,32 +1,32 @@
 const fetch = require("node-fetch");
 
-async function hasPig(item) {
+function hasPig(item) {
   const pigKeywords = ["pork", "bacon", "ham", "sausage", "lard"];
   for (const keyword of pigKeywords) {
-    if (
-      item["Name"].toLowerCase().includes(keyword) ||
-      item["Ingredients"].toLowerCase().includes(keyword)
-    ) {
+    if (item["Name"].toLowerCase().includes(keyword)) {
+      return true;
+    }
+    if (item.Ingredients && item.Ingredients.toLowerCase().includes(keyword)) {
       return true;
     }
   }
   return false;
 }
 
-async function hasCow(item) {
+function hasCow(item) {
   const cowKeywords = ["beef", "steak", "veal", "brisket", "ribeye"];
   for (const keyword of cowKeywords) {
-    if (
-      item["Name"].toLowerCase().includes(keyword) ||
-      item["Ingredients"].toLowerCase().includes(keyword)
-    ) {
+    if (item["Name"].toLowerCase().includes(keyword)) {
+      return true;
+    }
+    if (item.Ingredients && item.Ingredients.toLowerCase().includes(keyword)) {
       return true;
     }
   }
   return false;
 }
 
-async function addDish(id, location, connection) {
+async function addDish(id, pool) {
   const url = "https://api.hfs.purdue.edu/menus/v2/items/" + id;
   const headers = {
     "User-Agent":
@@ -34,67 +34,96 @@ async function addDish(id, location, connection) {
   };
 
   const response = await fetch(url, { headers });
-
   if (response.status === 200) {
     const jsonData = await response.json();
 
+    let pork = null;
+    if (jsonData.IsVegetarian) {
+      pork = false;
+    } else {
+      pork = hasPig(jsonData);
+    }
+
+    let beef = null;
+    if (jsonData.IsVegetarian) {
+      beef = false;
+    } else {
+      beef = hasCow(jsonData);
+    }
+
     const insertQuery =
-      "INSERT INTO boilerbites.dishes (id, dish_name, location, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const data = [
       jsonData.ID,
       jsonData.Name,
-      location,
       jsonData.IsVegetarian,
-      jsonData.Allergens[11].Value,
-      !jsonData.IsVegetarian && (await hasPig(jsonData)),
-      !jsonData.IsVegetarian && (await hasCow(jsonData)),
-      jsonData.Allergens[3].Value,
-      jsonData.Allergens[9].Value || jsonData.Allergens[5].Value,
-      jsonData.Nutrition[1].Value,
-      jsonData.Nutrition[3].Value,
-      jsonData.Nutrition[7].Value,
-      jsonData.Nutrition[11].Value,
+      jsonData.Allergens && jsonData.Allergens[11]
+        ? jsonData.Allergens[11].Value
+        : null,
+      pork,
+      beef,
+      jsonData.Allergens && jsonData.Allergens[3]
+        ? jsonData.Allergens[3].Value
+        : null,
+      jsonData.Allergens &&
+        ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
+          (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+      jsonData.Nutrition && jsonData.Nutrition[1]
+        ? jsonData.Nutrition[1].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[3]
+        ? jsonData.Nutrition[3].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[7]
+        ? jsonData.Nutrition[7].Value
+        : null,
+      jsonData.Nutrition && jsonData.Nutrition[11]
+        ? jsonData.Nutrition[11].Value
+        : null,
     ];
-    connection.query(insertQuery, data, (error) => {
-      if (error) {
-        console.error("Error inserting data:", error);
-      } else {
-        console.log("Data inserted successfully.");
-      }
-    });
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.query(insertQuery, data);
+    } catch (error) {
+      console.error("Error inserting data:", error);
+    } finally {
+      connection.release();
+    }
   } else {
     console.log("GET request failed. Status Code:", response.status);
   }
 }
 
-async function isDishExists(dishId, connection) {
-  return new Promise((resolve, reject) => {
-    const query =
-      "SELECT COUNT(*) AS count FROM boilerbites.dishes WHERE id = ?";
-    connection.query(query, [dishId], (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results[0].count > 0);
-      }
-    });
-  });
+async function isDishExists(dishId, pool) {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(
+      "SELECT * FROM boilerbites.dishes WHERE id = ?",
+      [dishId]
+    );
+    return rows.length > 0;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  } finally {
+    connection.release();
+  }
+  return false;
 }
-
-async function processMeals(data, dbConnection) {
+async function processMeals(data, pool) {
   for (const meal of data.Meals) {
     if (meal["Status"] == "Open") {
       for (const station of meal["Stations"]) {
         for (const item of station["Items"]) {
           const dishId = item.ID;
           try {
-            const exists = await isDishExists(dishId, dbConnection);
+            const exists = await isDishExists(dishId, pool);
 
             if (!exists) {
               console.log(
                 `Dish with ID ${dishId} doesn't exist in the database. Adding...`
               );
-              await addDish(dishId, data.Location, dbConnection);
+              await addDish(dishId, pool);
               console.log(`Dish with ID ${dishId} added to the database.`);
             }
           } catch (error) {
@@ -108,54 +137,112 @@ async function processMeals(data, dbConnection) {
 
 async function getLocationData(req, res) {
   const { location, date } = req.params;
-  var restrictions = req.query.restrict;
-  restrictions = restrictions.split(",");
+  const pool = req.app.locals.pool; // Use the pool from app.locals
+  const restrictions = req.query.restrict?.split(",") || [];
+  const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
+
+  try {
+    const response = await fetch(url);
+    if (response.status === 200) {
+      const jsonData = await response.json();
+      const connection = await pool.getConnection();
+      try {
+        const [rows] = await connection.query(
+          "SELECT * FROM boilerbites.timings WHERE dining_court = ? AND date = ?",
+          [location, date]
+        );
+        if (rows.length === 0) {
+          await processMeals(jsonData, pool);
+          await connection.query(
+            "INSERT INTO boilerbites.timings (dining_court, date) VALUES (?, ?)",
+            [location, date]
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        connection.release();
+      }
+      const dishes = await fetchRatingsForDishes(jsonData, restrictions, pool);
+      const finalDishData = enhanceDishData(jsonData, dishes);
+      res.json(finalDishData);
+    } else {
+      console.log("GET request failed. Status Code:", response.status);
+      res.status(response.status).send("Failed to fetch data.");
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+async function fetchRatingsForDishes(jsonData, restrictions, pool) {
+  const connection = await pool.getConnection();
   const filters = {
     vegetarian: "vegetarian = true",
     vegan: "vegan = true",
     "no beef": "beef = false",
     "no pork": "pork = false",
     "gluten-free": "gluten = false",
+    "no nuts": "nuts = false",
   };
-  var query = "SELECT id FROM boilerbites.dishes WHERE ";
-  for (var r in restrictions) {
-    query += filters[restrictions[r]];
-    if (parseInt(r) !== restrictions.length - 1) {
-      query += " AND ";
-    }
+  const query = `
+  SELECT d.id, d.dish_name, AVG(r.stars) AS average_stars, COUNT(r.stars) AS num_ratings
+  FROM boilerbites.dishes AS d
+  LEFT JOIN boilerbites.ratings AS r ON d.id = r.dish_id
+  WHERE d.id IN (?)
+  ${
+    restrictions.length > 0
+      ? "AND " + restrictions.map((r) => filters[r]).join(" AND ")
+      : ""
   }
-  const db = req.db;
-  db.query(query, (error, results) => {
-    if (error) {
-      console.error("Error querying dishes:", error);
-    } else {
-      var ids = [];
-      for (var i in results) {
-        ids.push(results[i].id);
-      }
-      console.log(ids);
-    }});
-  const url =
-    "https://api.hfs.purdue.edu/menus/v2/locations/" + location + "/" + date;
+  GROUP BY d.id, d.dish_name;
+  `;
+  const dishIds = [];
+  jsonData.Meals.forEach((meal) => {
+    meal.Stations.forEach((station) => {
+      station.Items.forEach((item) => {
+        dishIds.push(item.ID);
+      });
+    });
+  });
+  let results = [];
   try {
-    const response = await fetch(url);
-    if (response.status === 200) {
-      const jsonData = await response.json();
-      processMeals(jsonData, db)
-        .then(() => {
-          console.log("Processing completed.");
-        })
-        .catch((error) => {
-          console.error("Error processing meals:", error);
-        });
-      //const filteredDishes = await queryDishesWithRestrictions(filters, db);
-      res.json(jsonData);
-    } else {
-      console.log("GET request failed. Status Code:", response.status);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
+    [results, _] = await connection.query(query, [dishIds]);
+  } catch (err) {
+    console.error("Error fetching rating:", err);
+  } finally {
+    connection.release();
   }
+  return results;
+}
+
+function enhanceDishData(mealData, dishes) {
+  return mealData.Meals.map((meal) => {
+    const mealName = meal.Name;
+    const stations = meal.Stations.map((station) => {
+      const stationName = station.Name;
+      const items = station.Items.map((item) => {
+        const itemId = item.ID;
+        const dishName = item.Name;
+        const dish = dishes.find((d) => d.id === item.ID);
+        if (dish) {
+          return {
+            id: itemId,
+            dish_name: dishName,
+            avg: dish.average_stars,
+            reviews: dish.num_ratings,
+          };
+        }
+      }).filter(Boolean);
+
+      return { station_name: stationName, items };
+    });
+    return {
+      meal_name: mealName,
+      stations,
+    };
+  });
 }
 
 module.exports = {

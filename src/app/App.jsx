@@ -33,31 +33,31 @@ const App = () => (
           <Home />
         </Route>
         <Route exact path="/earhart">
-          <DiningCourtPage foodCourtName="Earhart" />
+          <DiningCourtPage location="Earhart" />
         </Route>
         <Route exact path="/ford">
-          <DiningCourtPage foodCourtName="Ford" />
+          <DiningCourtPage location="Ford" />
         </Route>
         <Route exact path="/hillenbrand">
-          <DiningCourtPage foodCourtName="Hillenbrand" />
+          <DiningCourtPage location="Hillenbrand" />
         </Route>
         <Route exact path="/wiley">
-          <DiningCourtPage foodCourtName="Wiley" />
+          <DiningCourtPage location="Wiley" />
         </Route>
         <Route exact path="/windsor">
-          <DiningCourtPage foodCourtName="Windsor" />
+          <DiningCourtPage location="Windsor" />
         </Route>
         <Route exact path="/1bowl">
-          <DiningCourtPage foodCourtName="1Bowl" />
+          <DiningCourtPage location="1Bowl" />
         </Route>
-        <Route exact path="/petesza">
-          <DiningCourtPage foodCourtName="Pete's Za" />
+        <Route exact path="/Pete's Za">
+          <DiningCourtPage location="Pete's Za" />
         </Route>
-        <Route exact path="/theburrow">
-          <DiningCourtPage foodCourtName="The Burrow" />
+        <Route exact path="/The Burrow">
+          <DiningCourtPage location="The Burrow" />
         </Route>
-        <Route exact path="/thegatheringplace">
-          <DiningCourtPage foodCourtName="The Gathering Place" />
+        <Route exact path="/The Gathering Place">
+          <DiningCourtPage location="The Gathering Place" />
         </Route>
         <Route exact path="/">
           <Redirect to="/home" />
