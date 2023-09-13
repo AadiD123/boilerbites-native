@@ -189,11 +189,11 @@ const Home = () => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
     });
-  }, [selectedOptions]);
+  }, []);
 
-  const handleSelectionChange = (event) => {
-    setSelectedOptions(event.target.value);
-  };
+  // const handleSelectionChange = (event) => {
+  //   setSelectedOptions(event.target.value);
+  // };
 
   return (
     <IonPage>
@@ -234,12 +234,12 @@ const Home = () => {
           /> */}
         </div>
 
-        <IonCard>
+        <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>
             <IonCardTitle>Dining Courts</IonCardTitle>
           </IonCardHeader>
-          <IonCardContent>
-            <IonList style={{ margin: "0px", padding: "0px" }}>
+          <IonCardContent style={{ paddingInline: "0px" }}>
+            <IonList>
               {locations.map((location, index) => (
                 <IonItem
                   routerLink={`/${location}`}
@@ -248,22 +248,34 @@ const Home = () => {
                     display: "flex",
                     flexWrap: "wrap",
                     "--detail-icon-color": "transparent",
+                    "--detail-icon-size": "0",
                     padding: "0px",
+                    margin: "0px",
+                    minHeight: "4.5em",
                   }}
                 >
-                  <IonThumbnail slot="start">
-                    <img alt={`${location}`} src={`/assets/${location}.png`} />
-                  </IonThumbnail>
-                  <IonLabel>{location}</IonLabel>
-                  <IonLabel>{locationTimings[location]}</IonLabel>
-                  <Rating
-                    name="read-only"
-                    value={locationRatings[location] || 0}
-                    readOnly
-                    precision={0.1}
-                    emptyIcon={customIcons.empty}
-                    icon={customIcons.filled}
-                  />
+                  <div className="home-list-item-cont">
+                    <IonThumbnail slot="start">
+                      <img
+                        alt={`${location}`}
+                        src={`/assets/${location}.png`}
+                      />
+                    </IonThumbnail>
+
+                    <div style={{ fontSize: "0.9em" }}>
+                      <IonLabel>{location}</IonLabel>
+                      <IonLabel>{locationTimings[location]}</IonLabel>
+                    </div>
+
+                    <Rating
+                      name="read-only"
+                      value={locationRatings[location] || 0}
+                      readOnly
+                      precision={0.1}
+                      emptyIcon={customIcons.empty}
+                      icon={customIcons.filled}
+                    />
+                  </div>
                 </IonItem>
               ))}
             </IonList>
