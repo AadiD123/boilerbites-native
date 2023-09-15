@@ -45,6 +45,7 @@ export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [locationRating, setLocationRating] = useState(0);
   const [times, setTimes] = useState({});
 
   // const [meals, setMeals] = useState([]);
@@ -91,7 +92,6 @@ export default function DiningCourtPage(props) {
   };
 
   useEffect(() => {
-    console.log("hello");
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1);
     const day = String(selectedDate.getDate());
@@ -102,8 +102,8 @@ export default function DiningCourtPage(props) {
     const fetchCurrentMeal = async () => {
       const response = await fetch(
         selectedOptionsQuery === ""
-          ? `http://localhost:4000/api/dishes/${props.location}/${formattedDate}`
-          : `http://localhost:4000/api/dishes/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+          ? `https://boilerbitesapp.onrender.com/api/dishes/${props.location}/${formattedDate}`
+          : `https://boilerbitesapp.onrender.com/api/dishes/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -137,8 +137,8 @@ export default function DiningCourtPage(props) {
       try {
         const response = await fetch(
           selectedOptionsQuery === ""
-            ? `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}`
-            : `http://localhost:4000/api/dinings/timing/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+            ? `https://boilerbitesapp.onrender.com/api/dinings/timing/${props.location}/${formattedDate}`
+            : `https://boilerbitesapp.onrender.com/api/dinings/timing/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
         );
         if (response.ok) {
           const locationTimes = await response.json();
@@ -148,6 +148,15 @@ export default function DiningCourtPage(props) {
           for (const timing of locationTimes) {
             const startTime = convertTo12HourFormat(timing.timing[0]);
             const endTime = convertTo12HourFormat(timing.timing[1]);
+
+            if (timing.status == "Closed") {
+              setTimes((otherTimes) => ({
+                ...otherTimes,
+                [timing["meal_name"]]: "Closed",
+              }));
+              continue;
+            }
+
             setTimes((otherTimes) => ({
               ...otherTimes,
               [timing["meal_name"]]: startTime + " - " + endTime,
@@ -170,7 +179,25 @@ export default function DiningCourtPage(props) {
       }
     };
 
+    const fetchLocationRating = async () => {
+      try {
+        const response = await fetch(
+          selectedOptionsQuery === ""
+            ? `https://boilerbitesapp.onrender.com/api/dinings/rating/${props.location}/${formattedDate}`
+            : `https://boilerbitesapp.onrender.com/api/dinings/rating/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+        );
+        if (response.ok) {
+          const rating = await response.json();
+          setLocationRating(rating.averageStars);
+          console.log(locationRating);
+        }
+      } catch (error) {
+        console.error("Error fetching location times:", error);
+      }
+    };
+
     fetchCurrentMeal();
+    fetchLocationRating();
     fetchLocationTimings();
   }, [selectedDate, selectedMeal, selectedOptions]);
 
@@ -197,6 +224,7 @@ export default function DiningCourtPage(props) {
             {selectedMeal !== "" ? (
               <FoodCourtCard
                 diningCourt={props.location}
+                rating={locationRating}
                 timing={times[selectedMeal]}
               />
             ) : (
