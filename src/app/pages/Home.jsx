@@ -122,8 +122,12 @@ const Home = () => {
     try {
       const response = await fetch(
         selectedOptionsQuery === ""
-          ? `https://boilerbitesapp.onrender.com/api/dinings/rating/${location}/${date}`
-          : `https://boilerbitesapp.onrender.com/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/rating/${location}/${date}`
+          : `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
       );
 
       if (response.ok) {
@@ -143,7 +147,9 @@ const Home = () => {
     const date = getDate();
     try {
       const response = await fetch(
-        `https://boilerbitesapp.onrender.com/api/dinings/timing/${location}/${date}`
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/dinings/timing/${location}/${date}`
       );
       if (response.ok) {
         const locationTimes = await response.json();

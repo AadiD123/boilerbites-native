@@ -137,8 +137,12 @@ export default function DiningCourtPage(props) {
       try {
         const response = await fetch(
           selectedOptionsQuery === ""
-            ? `https://boilerbitesapp.onrender.com/api/dinings/timing/${props.location}/${formattedDate}`
-            : `https://boilerbitesapp.onrender.com/api/dinings/timing/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+            ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
+                props.location
+              }/${formattedDate}`
+            : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
+                props.location
+              }/${formattedDate}/?restrict=${selectedOptionsQuery}`
         );
         if (response.ok) {
           const locationTimes = await response.json();
@@ -183,8 +187,12 @@ export default function DiningCourtPage(props) {
       try {
         const response = await fetch(
           selectedOptionsQuery === ""
-            ? `https://boilerbitesapp.onrender.com/api/dinings/rating/${props.location}/${formattedDate}`
-            : `https://boilerbitesapp.onrender.com/api/dinings/rating/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+            ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
+                props.location
+              }/${formattedDate}`
+            : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
+                props.location
+              }/${formattedDate}/?restrict=${selectedOptionsQuery}`
         );
         if (response.ok) {
           const rating = await response.json();
