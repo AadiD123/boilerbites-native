@@ -9,10 +9,17 @@ const diningRoutes = require("./routes/dinings");
 
 const app = express();
 
+// const pool = mysql.createPool({
+//   host: "boilerbites-1.cjmepwltgjhe.us-east-2.rds.amazonaws.com",
+//   user: "admin",
+//   password: "purduepete",
+//   connectionLimit: 10, 
+// });
+
 const pool = mysql.createPool({
-  host: "boilerbites-1.cjmepwltgjhe.us-east-2.rds.amazonaws.com",
-  user: "admin",
-  password: "purduepete",
+  host: "localhost",
+  user: "root",
+  password: "Crondon123",
   connectionLimit: 10, 
 });
 
