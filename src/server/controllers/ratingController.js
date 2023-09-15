@@ -47,7 +47,7 @@ const updateRating = async (req, res) => {
   const pool = req.app.locals.pool;
   let { rating_id } = req.params;
   const { stars } = req.body;
-  
+
   // Validate that rating_id is an integer
   rating_id = parseInt(rating_id);
   if (isNaN(rating_id)) {
@@ -60,7 +60,7 @@ const updateRating = async (req, res) => {
   try {
     const results = await connection.query(updateQuery, [stars, rating_id]);
     console.log(results);
-    if (results.affectedRows > 0) {
+    if (results[0].affectedRows > 0) {
       res.status(200).json({ message: "Rating updated successfully" });
     } else {
       res.status(404).json({ error: "Rating not found" });

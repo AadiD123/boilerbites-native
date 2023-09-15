@@ -102,8 +102,12 @@ export default function DiningCourtPage(props) {
     const fetchCurrentMeal = async () => {
       const response = await fetch(
         selectedOptionsQuery === ""
-          ? `https://boilerbitesapp.onrender.com/api/dishes/${props.location}/${formattedDate}`
-          : `https://boilerbitesapp.onrender.com/api/dishes/${props.location}/${formattedDate}/?restrict=${selectedOptionsQuery}`
+          ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+              props.location
+            }/${formattedDate}`
+          : `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+              props.location
+            }/${formattedDate}/?restrict=${selectedOptionsQuery}`
       );
       if (response.ok) {
         const data = await response.json();

@@ -24,7 +24,7 @@ import Rating from "@mui/material/Rating";
 
 import "./Home.css";
 import React, { useState, useEffect } from "react";
-import Restrictions from "../components/Restrictions";
+// import Restrictions from "../components/Restrictions";
 
 const Home = () => {
   const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand"];
@@ -165,7 +165,7 @@ const Home = () => {
               currentTime <= timing.timing[1]
             ) {
               // convert timing to 12 hour format
-              const startTime = convertTo12HourFormat(timing.timing[0]);
+              // const startTime = convertTo12HourFormat(timing.timing[0]);
               const endTime = convertTo12HourFormat(timing.timing[1]);
               setLocationTimings((prevTimings) => ({
                 ...prevTimings,
@@ -173,14 +173,14 @@ const Home = () => {
               }));
             }
 
-            if (currentTime <= timing.timing[0]) {
-              if (
-                closestNextOpenTime === currentTime ||
-                timing.timing[0] < closestNextOpenTime
-              ) {
-                closestNextOpenTime = timing.timing[0];
-              }
-            }
+            // if (currentTime <= timing.timing[0]) {
+            //   if (
+            //     closestNextOpenTime === currentTime ||
+            //     timing.timing[0] < closestNextOpenTime
+            //   ) {
+            //     closestNextOpenTime = timing.timing[0];
+            //   }
+            // }
           }
         }
 
