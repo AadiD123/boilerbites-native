@@ -5,29 +5,28 @@ import { styled } from "@mui/material/styles";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Rating from "@mui/material/Rating";
-import { Drivers, Storage } from "@ionic/storage";
+import { store } from "../App";
 
 import "./DishItem.css";
 
 const DishItem = (props) => {
-  const storage = new Storage();
-  storage.create();
-
   const hapticsImpactMedium = async () => {
     await Haptics.impact({ style: ImpactStyle.Medium });
   };
 
-  const [rating, setRating] = useState(props.avg);
+  const [rating, setRating] = useState(props.avg || 0);
   const [starColor, setStarColor] = useState("black");
   const [precision, setPrecision] = useState(0.1);
 
   useEffect(() => {
     // dish_id -> rating_id -> rating
     const checkIfRatingExists = async () => {
-      const ratingKey = `${props.id}`;
-      const storedRating = await storage.get(ratingKey);
-      if (storedRating !== null) {
-        setRating(parseFloat(storedRating));
+      if ((await store.get(props.id)) != null) {
+        const ratingId = await store.get(props.id);
+        const storedRating = await store.get(ratingId);
+        if (storedRating !== null) {
+          setRating(parseFloat(storedRating));
+        }
       }
     };
 
@@ -35,6 +34,7 @@ const DishItem = (props) => {
   }, [props.id]); // Update the effect when props.id changes
 
   const updateExistingRating = async (selectedRating, ratingId) => {
+    console.log("update existing rating", selectedRating, ratingId);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/ratings/${ratingId}`,
@@ -51,9 +51,8 @@ const DishItem = (props) => {
 
       if (response.ok) {
         console.log(`Updated user's rating: ${selectedRating}`);
-        // Update the rating in localStorage
-        const ratingKey = `rating_${props.id}`;
-        await storage.set(ratingKey, selectedRating.toString());
+        // Update the rating in store
+        await store.set(store.get(props.id), selectedRating.toString());
       } else {
         console.error("Failed to update rating on the server.");
       }
@@ -83,10 +82,9 @@ const DishItem = (props) => {
         console.log(`User's rating: ${selectedRating}`);
         console.log("jsonResponse id", jsonResponse[0].insertId);
 
-        // Add localStorage with the new rating id
-        const ratingKey = `rating_${props.id}`;
-        await storage.set(ratingKey, selectedRating.toString());
-        await storage.set(
+        // Add store with the new rating id
+        await store.set(props.id, jsonResponse[0].insertId.toString());
+        await store.set(
           jsonResponse[0].insertId.toString(),
           selectedRating.toString()
         );
@@ -105,7 +103,7 @@ const DishItem = (props) => {
     setPrecision(1);
 
     // Check if a rating for this dish already exists
-    const ratingId = await storage.get(props.id);
+    const ratingId = await store.get(props.id);
 
     if (ratingId) {
       // Update the existing rating
