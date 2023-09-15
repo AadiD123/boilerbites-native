@@ -45,14 +45,21 @@ const createRating = async (req, res) => {
 // update
 const updateRating = async (req, res) => {
   const pool = req.app.locals.pool;
-  const { rating_id } = req.params;
+  let { rating_id } = req.params;
   const { stars } = req.body;
+  
+  // Validate that rating_id is an integer
+  rating_id = parseInt(rating_id);
+  if (isNaN(rating_id)) {
+    return res.status(400).json({ error: "Rating ID must be an integer" });
+  }
+
   const updateQuery = `UPDATE boilerbites.ratings SET stars = ? WHERE id = ?`;
 
   const connection = await pool.getConnection();
   try {
     const results = await connection.query(updateQuery, [stars, rating_id]);
-
+    console.log(results);
     if (results.affectedRows > 0) {
       res.status(200).json({ message: "Rating updated successfully" });
     } else {
