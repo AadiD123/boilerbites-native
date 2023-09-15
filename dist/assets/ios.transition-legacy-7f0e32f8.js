@@ -1,8 +1,4 @@
-<<<<<<< HEAD:dist/assets/ios.transition-legacy-5e1d5eec.js
-System.register(["./index-legacy-65c47dca.js"],(function(e,t){"use strict";var o,n;return{setters:[e=>{o=e.l,n=e.m}],execute:function(){
-=======
-System.register(["./index-legacy-b06a98db.js"],(function(e,t){"use strict";var o,n;return{setters:[e=>{o=e.l,n=e.m}],execute:function(){
->>>>>>> 2e31d179ca9050e8e47dd7ecb7606ddf9285f05f:dist/assets/ios.transition-legacy-4e9f9943.js
+System.register(["./index-legacy-b0316ac0.js"],(function(e,t){"use strict";var o,n;return{setters:[e=>{o=e.l,n=e.m}],execute:function(){
 /*!
        * (C) Ionic http://ionicframework.com - MIT License
        */

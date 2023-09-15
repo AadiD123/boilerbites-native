@@ -1,8 +1,4 @@
-<<<<<<< HEAD:dist/assets/keyboard2-legacy-8e5d658c.js
-System.register(["./index-legacy-65c47dca.js"],(function(e,t){"use strict";var i;return{setters:[e=>{i=e.K}],execute:function(){
-=======
-System.register(["./index-legacy-b06a98db.js"],(function(e,t){"use strict";var i;return{setters:[e=>{i=e.K}],execute:function(){
->>>>>>> 2e31d179ca9050e8e47dd7ecb7606ddf9285f05f:dist/assets/keyboard2-legacy-5e0b18c0.js
+System.register(["./index-legacy-b0316ac0.js"],(function(e,t){"use strict";var i;return{setters:[e=>{i=e.K}],execute:function(){
 /*!
        * (C) Ionic http://ionicframework.com - MIT License
        */

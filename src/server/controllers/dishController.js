@@ -146,6 +146,9 @@ async function getLocationData(req, res) {
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
+      if (jsonData["IsPublished"] === false) {
+        res.status(404).send("Not Published");
+      }
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.query(
