@@ -13,6 +13,8 @@ import {
   IonList,
   IonThumbnail,
   IonText,
+  IonRefresher,
+  IonRefresherContent,
 } from "@ionic/react";
 
 import { styled } from "@mui/material/styles";
@@ -22,7 +24,7 @@ import Rating from "@mui/material/Rating";
 
 import "./Home.css";
 import React, { useState, useEffect } from "react";
-import Restrictions from "../components/Restrictions";
+// import Restrictions from "../components/Restrictions";
 
 const Home = () => {
   const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand"];
@@ -100,86 +102,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const date = getDate();
-    console.log(date);
-
-    const fetchLocationRatings = async (location) => {
-      const selectedOptionsQuery = selectedOptions.join(",");
-
-      try {
-        const response = await fetch(
-          selectedOptionsQuery === ""
-            ? `http://localhost:4000/api/dinings/rating/${location}/${date}`
-            : `http://localhost:4000/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          // console.log("called ratings", location, data);
-          setLocationRatings((prevRatings) => ({
-            ...prevRatings,
-            [location]: data.averageStars,
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching location times:", error);
-      }
-    };
-
-    const fetchLocationTimings = async (location) => {
-      try {
-        const response = await fetch(
-          `http://localhost:4000/api/dinings/timing/${location}/${date}`
-        );
-        if (response.ok) {
-          const locationTimes = await response.json();
-
-          const currentTime = getCurrentTime(date);
-          var closestNextOpenTime = currentTime;
-
-          for (const timing of locationTimes) {
-            if (timing.status === "Open") {
-              // check if current time is within meal time
-              if (
-                currentTime >= timing.timing[0] &&
-                currentTime <= timing.timing[1]
-              ) {
-                // convert timing to 12 hour format
-                const startTime = convertTo12HourFormat(timing.timing[0]);
-                const endTime = convertTo12HourFormat(timing.timing[1]);
-                setLocationTimings((prevTimings) => ({
-                  ...prevTimings,
-                  [location]: "Open till " + endTime,
-                }));
-              }
-
-              if (currentTime <= timing.timing[0]) {
-                if (
-                  closestNextOpenTime === currentTime ||
-                  timing.timing[0] < closestNextOpenTime
-                ) {
-                  closestNextOpenTime = timing.timing[0];
-                }
-              }
-            }
-          }
-
-          // locationTimings[location] == null &&
-          // closestNextOpenTime === currentTime
-          //   ? setLocationTimings((prevTimings) => ({
-          //       ...prevTimings,
-          //       [location]: "Closed for rest of today",
-          //     }))
-          //   : setLocationTimings((prevTimings) => ({
-          //       ...prevTimings,
-          //       [location]: "Closed, will open at " + closestNextOpenTime,
-          //     }));
-        }
-      } catch (error) {
-        console.error("Error fetching location times:", error);
-      }
-    };
-
     locations.forEach((location) => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
@@ -189,7 +111,116 @@ const Home = () => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
     });
+
+    console.log(locationTimings);
   }, []);
+
+  const fetchLocationRatings = async (location) => {
+    const date = getDate();
+    const selectedOptionsQuery = selectedOptions.join(",");
+
+    try {
+      const response = await fetch(
+        selectedOptionsQuery === ""
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/rating/${location}/${date}`
+          : `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // console.log("called ratings", location, data);
+        setLocationRatings((prevRatings) => ({
+          ...prevRatings,
+          [location]: data.averageStars,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching location times:", error);
+    }
+  };
+
+  const fetchLocationTimings = async (location) => {
+    const date = getDate();
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/dinings/timing/${location}/${date}`
+      );
+      if (response.ok) {
+        const locationTimes = await response.json();
+
+        const currentTime = getCurrentTime(date);
+        var closestNextOpenTime = currentTime;
+
+        for (const timing of locationTimes) {
+          if (timing.status === "Open") {
+            // check if current time is within meal time
+            if (
+              currentTime >= timing.timing[0] &&
+              currentTime <= timing.timing[1]
+            ) {
+              // convert timing to 12 hour format
+              // const startTime = convertTo12HourFormat(timing.timing[0]);
+              const endTime = convertTo12HourFormat(timing.timing[1]);
+              setLocationTimings((prevTimings) => ({
+                ...prevTimings,
+                [location]: "Open till " + endTime,
+              }));
+            }
+
+            // if (currentTime <= timing.timing[0]) {
+            //   if (
+            //     closestNextOpenTime === currentTime ||
+            //     timing.timing[0] < closestNextOpenTime
+            //   ) {
+            //     closestNextOpenTime = timing.timing[0];
+            //   }
+            // }
+          }
+        }
+
+        if (locationTimings[location] == null) {
+          setLocationTimings((prevTimings) => ({
+            ...prevTimings,
+            [location]: "Closed",
+          }));
+        }
+
+        // locationTimings[location] == null &&
+        // closestNextOpenTime === currentTime
+        //   ? setLocationTimings((prevTimings) => ({
+        //       ...prevTimings,
+        //       [location]: "Closed for rest of today",
+        //     }))
+        //   : setLocationTimings((prevTimings) => ({
+        //       ...prevTimings,
+        //       [location]: "Closed, will open at " + closestNextOpenTime,
+        //     }));
+      }
+    } catch (error) {
+      console.error("Error fetching location times:", error);
+    }
+  };
+
+  const handleRefresh = (event) => {
+    setTimeout(() => {
+      locations.forEach((location) => {
+        fetchLocationRatings(location);
+        fetchLocationTimings(location);
+      });
+
+      quickBites.forEach((location) => {
+        fetchLocationRatings(location);
+        fetchLocationTimings(location);
+      });
+      event.detail.complete();
+    }, 2000);
+  };
 
   // const handleSelectionChange = (event) => {
   //   setSelectedOptions(event.target.value);
@@ -203,6 +234,9 @@ const Home = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+        <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+          <IonRefresherContent></IonRefresherContent>
+        </IonRefresher>
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">Boiler Bites</IonTitle>
@@ -262,7 +296,7 @@ const Home = () => {
                       />
                     </IonThumbnail>
 
-                    <div style={{ fontSize: "0.9em" }}>
+                    <div style={{ fontSize: "0.9em", textAlign: "center" }}>
                       <IonLabel>{location}</IonLabel>
                       <IonLabel>{locationTimings[location]}</IonLabel>
                     </div>
@@ -281,27 +315,48 @@ const Home = () => {
             </IonList>
           </IonCardContent>
         </IonCard>
-        <IonCard>
+        <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>
             <IonCardTitle>Quick Bites</IonCardTitle>
           </IonCardHeader>
-          <IonCardContent>
+          <IonCardContent style={{ paddingInline: "0px" }}>
             <IonList>
               {quickBites.map((location, index) => (
-                <IonItem routerLink={`/${location}`} key={index}>
-                  <IonThumbnail slot="start">
-                    <img alt={`${location}`} src={`/assets/${location}.png`} />
-                  </IonThumbnail>
-                  <IonLabel>{location}</IonLabel>
-                  <IonLabel>{locationTimings[location]}</IonLabel>
-                  <Rating
-                    name="read-only"
-                    value={locationRatings[location] || 0}
-                    readOnly
-                    precision={0.1}
-                    emptyIcon={customIcons.empty}
-                    icon={customIcons.filled}
-                  />
+                <IonItem
+                  routerLink={`/${location}`}
+                  key={index}
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    "--detail-icon-color": "transparent",
+                    "--detail-icon-size": "0",
+                    padding: "0px",
+                    margin: "0px",
+                    minHeight: "4.5em",
+                  }}
+                >
+                  <div className="home-list-item-cont">
+                    <IonThumbnail slot="start">
+                      <img
+                        alt={`${location}`}
+                        src={`/assets/${location}.png`}
+                      />
+                    </IonThumbnail>
+
+                    <div style={{ fontSize: "0.9em", textAlign: "center" }}>
+                      <IonLabel>{location}</IonLabel>
+                      <IonLabel>{locationTimings[location]}</IonLabel>
+                    </div>
+
+                    <Rating
+                      name="read-only"
+                      value={locationRatings[location] || 0}
+                      readOnly
+                      precision={0.1}
+                      emptyIcon={customIcons.empty}
+                      icon={customIcons.filled}
+                    />
+                  </div>
                 </IonItem>
               ))}
             </IonList>

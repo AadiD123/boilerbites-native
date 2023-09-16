@@ -28,12 +28,8 @@ function hasCow(item) {
 
 async function addDish(id, pool) {
   const url = "https://api.hfs.purdue.edu/menus/v2/items/" + id;
-  const headers = {
-    "User-Agent":
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
-  };
 
-  const response = await fetch(url, { headers });
+  const response = await fetch(url);
   if (response.status === 200) {
     const jsonData = await response.json();
 
@@ -52,39 +48,43 @@ async function addDish(id, pool) {
     }
 
     const insertQuery =
-      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES ?";
+    
     const data = [
-      jsonData.ID,
-      jsonData.Name,
-      jsonData.IsVegetarian,
-      jsonData.Allergens && jsonData.Allergens[11]
-        ? jsonData.Allergens[11].Value
-        : null,
-      pork,
-      beef,
-      jsonData.Allergens && jsonData.Allergens[3]
-        ? jsonData.Allergens[3].Value
-        : null,
-      jsonData.Allergens &&
-        ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
-          (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
-      jsonData.Nutrition && jsonData.Nutrition[1]
-        ? jsonData.Nutrition[1].Value
-        : null,
-      jsonData.Nutrition && jsonData.Nutrition[3]
-        ? jsonData.Nutrition[3].Value
-        : null,
-      jsonData.Nutrition && jsonData.Nutrition[7]
-        ? jsonData.Nutrition[7].Value
-        : null,
-      jsonData.Nutrition && jsonData.Nutrition[11]
-        ? jsonData.Nutrition[11].Value
-        : null,
+      [
+        jsonData.ID,
+        jsonData.Name,
+        jsonData.IsVegetarian,
+        jsonData.Allergens && jsonData.Allergens[11]
+          ? jsonData.Allergens[11].Value
+          : null,
+        pork,
+        beef,
+        jsonData.Allergens && jsonData.Allergens[3]
+          ? jsonData.Allergens[3].Value
+          : null,
+        jsonData.Allergens &&
+          ((jsonData.Allergens[9] ? jsonData.Allergens[9].Value : null) ||
+            (jsonData.Allergens[5] ? jsonData.Allergens[5].Value : null)),
+        jsonData.Nutrition && jsonData.Nutrition[1]
+          ? jsonData.Nutrition[1].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[3]
+          ? jsonData.Nutrition[3].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[7]
+          ? jsonData.Nutrition[7].Value
+          : null,
+        jsonData.Nutrition && jsonData.Nutrition[11]
+          ? jsonData.Nutrition[11].Value
+          : null,
+      ],
+      // You can add more rows here as needed
     ];
 
     const connection = await pool.getConnection();
     try {
-      await connection.query(insertQuery, data);
+      await connection.query(insertQuery, [data]); // Use data as a parameter
     } catch (error) {
       console.error("Error inserting data:", error);
     } finally {
@@ -110,6 +110,7 @@ async function isDishExists(dishId, pool) {
   }
   return false;
 }
+
 async function processMeals(data, pool) {
   for (const meal of data.Meals) {
     if (meal["Status"] == "Open") {
@@ -145,6 +146,9 @@ async function getLocationData(req, res) {
     const response = await fetch(url);
     if (response.status === 200) {
       const jsonData = await response.json();
+      if (jsonData["IsPublished"] === false) {
+        res.status(404).send("Not Published");
+      }
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.query(

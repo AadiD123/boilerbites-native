@@ -22,8 +22,15 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import DiningCourtPage from "./pages/DiningCourtPage.jsx";
+import { Drivers, Storage } from "@ionic/storage";
 
 setupIonicReact();
+
+export const store = new Storage({
+  name: "__mydb",
+  driverOrder: [Drivers.IndexedDB, Drivers.LocalStorage],
+});
+store.create();
 
 const App = () => (
   <IonApp>
