@@ -33,6 +33,7 @@ import {
 } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
+import { useHistory } from 'react-router-dom';
 import "./DiningCourtPage.css";
 
 // Components
@@ -47,8 +48,6 @@ export default function DiningCourtPage(props) {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [locationRating, setLocationRating] = useState(0);
   const [times, setTimes] = useState({});
-
-  // const [meals, setMeals] = useState([]);
   const [mealDict, setMealDict] = useState({});
 
   const options = [
@@ -90,6 +89,14 @@ export default function DiningCourtPage(props) {
 
     return `${hour}:${minutes} ${period}`;
   };
+
+  const history = useHistory();
+
+  const handleBackButtonClick = () => {
+    // Navigate to the home page route
+    history.push('/home');
+  };
+
 
   useEffect(() => {
     const year = selectedDate.getFullYear();
@@ -170,16 +177,16 @@ export default function DiningCourtPage(props) {
               [timing["meal_name"]]: startTime + " - " + endTime,
             }));
 
-            if (timing.status === "Open") {
-              // check if current time is within meal time
-              if (
-                currentTime >= timing.timing[0] &&
-                currentTime <= timing.timing[1]
-              ) {
-                // convert timing to 12 hour format
-                setSelectedMeal(timing["meal_name"]);
-              }
-            }
+            // if (timing.status === "Open") {
+            //   // check if current time is within meal time
+            //   if (
+            //     currentTime >= timing.timing[0] &&
+            //     currentTime <= timing.timing[1]
+            //   ) {
+            //     // convert timing to 12 hour format
+            //     setSelectedMeal(timing["meal_name"]);
+            //   }
+            // }
           }
         }
       } catch (error) {
@@ -211,7 +218,7 @@ export default function DiningCourtPage(props) {
     fetchCurrentMeal();
     fetchLocationRating();
     fetchLocationTimings();
-  }, [selectedDate, selectedMeal, selectedOptions]);
+  }, [selectedDate, selectedOptions]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -219,7 +226,6 @@ export default function DiningCourtPage(props) {
 
   const handleSelectionChange = (event) => {
     setSelectedOptions(event.target.value);
-    
   };
 
   return (
@@ -227,7 +233,7 @@ export default function DiningCourtPage(props) {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" />
+            <IonBackButton defaultHref="/home" onClick={handleBackButtonClick} />
           </IonButtons>
         </IonToolbar>
       </IonHeader>
