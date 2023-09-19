@@ -1,15 +1,14 @@
-const fetch = require("node-fetch");
-
 async function getDiningTiming(req, res) {
   const { location, date } = req.params;
-  const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
-
+  const pool = req.app.locals.pool;
+  const connection = await pool.getConnection();
   try {
-    const response = await fetch(url);
-
-    if (response.status === 200) {
-      const jsonData = await response.json();
-
+    const [rows] = await connection.query(
+      "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
+      [location, date]
+    );
+    if (rows.length > 0) {
+      const jsonData = rows[0].data;
       const mealData = jsonData.Meals.map((meal) => {
         const mealName = meal.Name;
         const status = meal.Status;
@@ -32,6 +31,8 @@ async function getDiningTiming(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
+  } finally {
+    connection.release();
   }
 }
 
@@ -47,13 +48,14 @@ async function getDiningCourtRating(req, res) {
   };
   const pool = req.app.locals.pool;
   const restrictions = req.query.restrict?.split(",") || [];
-  const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
 
   try {
-    const response = await fetch(url);
-
-    if (response.status === 200) {
-      const jsonData = await response.json();
+    const [rows] = await pool.query(
+      "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
+      [location, date]
+    );
+    if (rows.length > 0) {
+      const jsonData = rows[0].data;
 
       const dishIds = [];
       jsonData.Meals.forEach((meal) => {
@@ -65,7 +67,6 @@ async function getDiningCourtRating(req, res) {
       });
 
       if (dishIds.length === 0) {
-        // Handle the case where no dishes were found
         return res.status(404).json({ error: "No dishes found" });
       }
       let query = `
@@ -81,8 +82,6 @@ async function getDiningCourtRating(req, res) {
       query += `
         GROUP BY d.id, d.dish_name;
       `;
-
-      // Acquire a connection from the pool
       const connection = await pool.getConnection();
 
       try {
