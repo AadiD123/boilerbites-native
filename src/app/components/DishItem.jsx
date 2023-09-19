@@ -16,7 +16,7 @@ const DishItem = (props) => {
 
   const [rating, setRating] = useState(props.avg || 0);
   const [starColor, setStarColor] = useState("black");
-  const [precision, setPrecision] = useState(0.1);
+  const [precision, setPrecision] = useState(1);
 
   useEffect(() => {
     // dish_id -> rating_id -> rating
@@ -52,7 +52,8 @@ const DishItem = (props) => {
       if (response.ok) {
         console.log(`Updated user's rating: ${selectedRating}`);
         // Update the rating in store
-        await store.set(store.get(props.id), selectedRating.toString());
+        const ratingID = await store.get(props.id);
+        await store.set(ratingID, selectedRating.toString());
       } else {
         console.error("Failed to update rating on the server.");
       }
@@ -98,7 +99,7 @@ const DishItem = (props) => {
 
   const handleStarClick = async (selectedRating) => {
     // Update local state
-    setRating(selectedRating);
+    setRating(Math.ceil(selectedRating));
     setStarColor("#daaa00");
     setPrecision(1);
 
