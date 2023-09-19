@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 function hasPig(item) {
   const pigKeywords = ["pork", "bacon", "ham", "sausage", "lard"];
   for (const keyword of pigKeywords) {
@@ -79,12 +77,12 @@ async function addDish(id, pool) {
           ? jsonData.Nutrition[11].Value
           : null,
       ],
-      // You can add more rows here as needed
+      
     ];
 
     const connection = await pool.getConnection();
     try {
-      await connection.query(insertQuery, [data]); // Use data as a parameter
+      await connection.query(insertQuery, [data]); 
     } catch (error) {
       console.error("Error inserting data:", error);
     } finally {
@@ -143,22 +141,25 @@ async function getLocationData(req, res) {
   const url = `https://api.hfs.purdue.edu/menus/v2/locations/${location}/${date}`;
 
   try {
-    const response = await fetch(url);
-    if (response.status === 200) {
-      const jsonData = await response.json();
+    const [rows] = await pool.query(
+      "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
+      [location, date]
+    );
+    if (rows.length > 0) {
+      const jsonData = rows[0].data;
       if (jsonData["IsPublished"] === false) {
         res.status(404).send("Not Published");
       }
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.query(
-          "SELECT * FROM boilerbites.timings WHERE dining_court = ? AND date = ?",
+          "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
           [location, date]
         );
         if (rows.length === 0) {
           await processMeals(jsonData, pool);
           await connection.query(
-            "INSERT INTO boilerbites.timings (dining_court, date) VALUES (?, ?)",
+            "INSERT INTO boilerbites.timings (location, date) VALUES (?, ?)",
             [location, date]
           );
         }
