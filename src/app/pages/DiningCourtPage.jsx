@@ -219,6 +219,7 @@ export default function DiningCourtPage(props) {
 
   const handleSelectionChange = (event) => {
     setSelectedOptions(event.target.value);
+    
   };
 
   return (
