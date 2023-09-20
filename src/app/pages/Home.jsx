@@ -102,14 +102,27 @@ const Home = () => {
   };
 
   useEffect(() => {
+    setLocationTimings({});
     locations.forEach((location) => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
+      if (locationTimings[location] == null) {
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Closed",
+        }));
+      }
     });
 
     quickBites.forEach((location) => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
+      if (locationTimings[location] == null) {
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Closed",
+        }));
+      }
     });
 
     console.log(locationTimings);
@@ -184,13 +197,6 @@ const Home = () => {
           }
         }
 
-        if (locationTimings[location] == null) {
-          setLocationTimings((prevTimings) => ({
-            ...prevTimings,
-            [location]: "Closed",
-          }));
-        }
-
         // locationTimings[location] == null &&
         // closestNextOpenTime === currentTime
         //   ? setLocationTimings((prevTimings) => ({
@@ -207,7 +213,7 @@ const Home = () => {
     }
   };
 
-  const handleRefresh = (event) => {
+  const handleRefresh = async (event) => {
     setTimeout(() => {
       locations.forEach((location) => {
         fetchLocationRatings(location);
