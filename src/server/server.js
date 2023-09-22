@@ -43,8 +43,6 @@ app.use("/api/dinings", diningRoutes);
 
 // No need to explicitly connect to the database here
 
-http.create;
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
