@@ -167,7 +167,7 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
       
       for (const location of locations) {
         let currentDate = new Date();
-        for (let day = 0; day <= 7; day++) {
+        for (let day = -7; day <= 7; day++) {
           const formattedDate = formatDate(currentDate); // Format currentDate as needed
           
           // Check if a record with the same location and date already exists
@@ -200,7 +200,7 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
           }
   
           // Increment currentDate by one day
-          currentDate.setDate(currentDate.getDate() + 1);
+          currentDate.setDate(currentDate.getDate() - 1);
         }
       }
       connection.end();

@@ -281,7 +281,9 @@ export default function DiningCourtPage(props) {
 
         {selectedMeal !== "" ? (
           mealDict[selectedMeal] != null ? (
-            mealDict[selectedMeal].map((stationData) => (
+            mealDict[selectedMeal]
+            .filter((s) => s.items.length > 0)
+            .map((stationData) => (
               <IonCard key={stationData.stationName}>
                 <IonCardHeader>
                   <IonCardTitle>{stationData.stationName}</IonCardTitle>
