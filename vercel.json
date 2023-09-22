@@ -8,7 +8,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "use": "/src/server.js"
+      "dest": "/"
     }
   ]
 }
