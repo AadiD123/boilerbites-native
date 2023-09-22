@@ -24,7 +24,7 @@ import Rating from "@mui/material/Rating";
 
 import "./Home.css";
 import React, { useState, useEffect } from "react";
-// import Restrictions from "../components/Restrictions";
+import Restrictions from "../components/RestrictionsDropdown";
 
 const Home = () => {
   const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand"];
@@ -33,14 +33,6 @@ const Home = () => {
     "Pete's Za",
     "The Burrow",
     "The Gathering Place",
-  ];
-  const options = [
-    "vegetarian",
-    "vegan",
-    "no beef",
-    "no pork",
-    "gluten-free",
-    "no nuts",
   ];
 
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -102,18 +94,29 @@ const Home = () => {
   };
 
   useEffect(() => {
+    setLocationTimings({});
     locations.forEach((location) => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
+      if (locationTimings[location] == null) {
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Closed",
+        }));
+      }
     });
 
     quickBites.forEach((location) => {
       fetchLocationRatings(location);
       fetchLocationTimings(location);
+      if (locationTimings[location] == null) {
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Closed",
+        }));
+      }
     });
-
-    console.log(locationTimings);
-  }, []);
+  }, [selectedOptions]);
 
   const fetchLocationRatings = async (location) => {
     const date = getDate();
@@ -184,13 +187,6 @@ const Home = () => {
           }
         }
 
-        if (locationTimings[location] == null) {
-          setLocationTimings((prevTimings) => ({
-            ...prevTimings,
-            [location]: "Closed",
-          }));
-        }
-
         // locationTimings[location] == null &&
         // closestNextOpenTime === currentTime
         //   ? setLocationTimings((prevTimings) => ({
@@ -207,7 +203,7 @@ const Home = () => {
     }
   };
 
-  const handleRefresh = (event) => {
+  const handleRefresh = async (event) => {
     setTimeout(() => {
       locations.forEach((location) => {
         fetchLocationRatings(location);
@@ -222,9 +218,9 @@ const Home = () => {
     }, 2000);
   };
 
-  // const handleSelectionChange = (event) => {
-  //   setSelectedOptions(event.target.value);
-  // };
+  const handleSelectionChange = (value) => {
+    setSelectedOptions(value);
+  };
 
   return (
     <IonPage>
@@ -242,31 +238,12 @@ const Home = () => {
             <IonTitle size="large">Boiler Bites</IonTitle>
           </IonToolbar>
         </IonHeader>
-        {/* <div className="home-dropdown">
-          <FormControl fullWidth>
-            <InputLabel>Restrictions</InputLabel>
-            <Select
-              label="Restrictions"
-              multiple
-              value={selectedOptions} // Pass an array for multiple selections
-              onChange={handleSelectionChange}
-            >
-              {options.map((option, index) => (
-                <MenuItem key={index} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-        </div> */}
-        <div>
-          {/* <Restrictions
-            options={options}
+        <IonItem style={{ marginTop: "2em" }}>
+          <Restrictions
             selectedOptions={selectedOptions}
             handleSelectionChange={handleSelectionChange}
-          /> */}
-        </div>
+          />
+        </IonItem>
 
         <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>

@@ -16,7 +16,7 @@ const DishItem = (props) => {
 
   const [rating, setRating] = useState(props.avg || 0);
   const [starColor, setStarColor] = useState("black");
-  const [precision, setPrecision] = useState(1);
+  const [precision, setPrecision] = useState(0.1);
 
   useEffect(() => {
     // dish_id -> rating_id -> rating
@@ -26,6 +26,7 @@ const DishItem = (props) => {
         const storedRating = await store.get(ratingId);
         if (storedRating !== null) {
           setRating(parseFloat(storedRating));
+          setStarColor("#daaa00");
         }
       }
     };
@@ -139,7 +140,7 @@ const DishItem = (props) => {
         emptyIcon={customIcons.empty}
         icon={customIcons.filled}
         onChange={(event, newValue) => {
-          handleStarClick(newValue);
+          handleStarClick(Math.ceil(newValue));
           hapticsImpactMedium();
         }}
       />

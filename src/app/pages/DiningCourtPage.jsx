@@ -33,14 +33,14 @@ import {
 } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
-import { useHistory } from 'react-router-dom';
+import { useHistory } from "react-router-dom";
 import "./DiningCourtPage.css";
 
 // Components
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
-import Restrictions from "../components/Restrictions";
+import Restrictions from "../components/RestrictionsDropdown";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -94,9 +94,8 @@ export default function DiningCourtPage(props) {
 
   const handleBackButtonClick = () => {
     // Navigate to the home page route
-    history.push('/home');
+    history.push("/home");
   };
-
 
   useEffect(() => {
     const year = selectedDate.getFullYear();
@@ -233,7 +232,10 @@ export default function DiningCourtPage(props) {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" onClick={handleBackButtonClick} />
+            <IonBackButton
+              defaultHref="/home"
+              onClick={handleBackButtonClick}
+            />
           </IonButtons>
         </IonToolbar>
       </IonHeader>
