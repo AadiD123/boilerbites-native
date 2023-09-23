@@ -13,6 +13,7 @@ import {
   IonList,
   IonThumbnail,
   IonText,
+  IonNote,
   IonRefresher,
   IonRefresherContent,
 } from "@ionic/react";
@@ -286,6 +287,8 @@ const Home = () => {
                       emptyIcon={customIcons.empty}
                       icon={customIcons.filled}
                     />
+                    {/* {console.log(locationRatings)} */}
+                    {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
                   </div>
                 </IonItem>
               ))}
@@ -333,6 +336,7 @@ const Home = () => {
                       emptyIcon={customIcons.empty}
                       icon={customIcons.filled}
                     />
+                    {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
                   </div>
                 </IonItem>
               ))}

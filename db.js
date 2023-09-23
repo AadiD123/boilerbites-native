@@ -200,7 +200,7 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
           }
   
           // Increment currentDate by one day
-          currentDate.setDate(currentDate.getDate() - 1);
+          currentDate.setDate(currentDate.getDate() + 1);
         }
       }
       connection.end();

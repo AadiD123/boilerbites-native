@@ -3,6 +3,7 @@ const {
   createRating,
   getRatings,
   updateRating,
+  deleteRating
 } = require("../controllers/ratingController");
 
 const router = express.Router();
@@ -14,6 +15,8 @@ router.get("/:dish_id", getRatings);
 router.post("/", createRating);
 
 // UPDATE a review
-router.patch("/:rating_id", updateRating);
+router.patch("/patch/:rating_id", updateRating);
+
+router.delete("/del/:rating_id", deleteRating);
 
 module.exports = router;

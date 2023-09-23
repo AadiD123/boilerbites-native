@@ -73,8 +73,38 @@ const updateRating = async (req, res) => {
   }
 };
 
+const deleteRating = async (req, res) => {
+  const pool = req.app.locals.pool;
+  let { rating_id } = req.params;
+
+  // Validate that rating_id is an integer
+  rating_id = parseInt(rating_id);
+  if (isNaN(rating_id)) {
+    return res.status(400).json({ error: "Rating ID must be an integer" });
+  }
+
+  const deleteQuery = `DELETE FROM boilerbites.ratings WHERE id = ?`;
+
+  const connection = await pool.getConnection();
+  try {
+    const results = await connection.query(deleteQuery, [rating_id]);
+    console.log(results);
+    if (results[0].affectedRows > 0) {
+      res.status(200).json({ message: "Rating deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Rating not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting rating:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = {
   createRating,
   getRatings,
   updateRating,
+  deleteRating
 };

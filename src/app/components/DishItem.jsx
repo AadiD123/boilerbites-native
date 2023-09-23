@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { IonItem, IonButton, IonLabel } from "@ionic/react";
+import { IonItem, IonButton, IonLabel, IonNote } from "@ionic/react";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { styled } from "@mui/material/styles";
 import StarIcon from "@mui/icons-material/Star";
@@ -15,6 +15,7 @@ const DishItem = (props) => {
   };
 
   const [rating, setRating] = useState(props.avg || 0);
+  const [reviews, setReviews] = useState(props.reviews || 0);
   const [starColor, setStarColor] = useState("black");
   const [precision, setPrecision] = useState(0.1);
 
@@ -38,7 +39,7 @@ const DishItem = (props) => {
     console.log("update existing rating", selectedRating, ratingId);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/ratings/${ratingId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/ratings/patch/${ratingId}`,
         {
           method: "PATCH",
           headers: {
@@ -63,8 +64,33 @@ const DishItem = (props) => {
     }
   };
 
+  const deleteExistingRating = async (ratingId) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/ratings/del/${ratingId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      if (response.ok) {
+        const ratingID = await store.get(props.id);
+        console.log(ratingID, props.id);
+        await store.remove(ratingID);
+        await store.remove(props.id);
+      } else {
+        console.error("Failed to update rating on the server.");
+      }
+    } catch (error) {
+      console.error("Error occurred while updating rating:", error);
+    }
+  }
+
   const createNewRating = async (selectedRating) => {
     console.log("create new rating", props.id, props.avg, props.reviews);
+    
     // Create a new rating on the server
     try {
       const response = await fetch(
@@ -103,15 +129,19 @@ const DishItem = (props) => {
     setRating(Math.ceil(selectedRating));
     setStarColor("#daaa00");
     setPrecision(1);
-
     // Check if a rating for this dish already exists
     const ratingId = await store.get(props.id);
 
     if (ratingId) {
-      // Update the existing rating
-      await updateExistingRating(selectedRating, ratingId);
+      if (selectedRating > 0) {
+        await updateExistingRating(selectedRating, ratingId);
+      } else {
+        setReviews(reviews - 1);
+        await deleteExistingRating(ratingId);
+      }
     } else {
       // Create a new rating
+      setReviews(reviews + 1);
       await createNewRating(selectedRating);
     }
   };
@@ -144,6 +174,7 @@ const DishItem = (props) => {
           hapticsImpactMedium();
         }}
       />
+      <IonNote slot="end">{reviews}</IonNote>
     </IonItem>
   );
 };
