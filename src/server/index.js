@@ -2,11 +2,14 @@ require("dotenv").config();
 
 const express = require("express");
 const mysql = require("mysql2/promise");
+const serverless = require("serverless-http");
 const cors = require("cors");
 
 const ratingRoutes = require("./routes/ratings");
 const dishRoutes = require("./routes/dishes");
 const diningRoutes = require("./routes/dinings");
+
+const PORT = 4000;
 
 const app = express();
 
@@ -43,10 +46,12 @@ app.use("/api/dinings", diningRoutes);
 
 // No need to explicitly connect to the database here
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
+if (process.env.ENVIRONMENT === "lambda") {
+  module.exports.handler = serverless(app);
+} else {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 // Attach the pool to the app.locals so that you can access it in your routes
 app.locals.pool = pool;

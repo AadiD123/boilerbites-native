@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "vite",
-    "server": "nodemon src/server/server.js",
+    "server": "nodemon src/server/index.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
@@ -34,13 +34,14 @@
     "express": "^4.18.2",
     "ionicons": "^7.0.0",
     "mongoose": "^7.5.0",
-    "mysql2": "^3.6.0",
+    "mysql2": "^3.6.1",
     "nodemon": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
-    "sequelize": "^6.32.1",
+    "sequelize": "^6.33.0",
+    "serverless-http": "^3.2.0",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
