@@ -17,13 +17,6 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-// const pool = mysql.createPool({
-//   host: "localhost",
-//   user: "root",
-//   password: "Crondon123",
-//   connectionLimit: 10,
-// });
-
 pool.on("acquire", (connection) => {
   console.log("Connection %d acquired", connection.threadId);
 });
