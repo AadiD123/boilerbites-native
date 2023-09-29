@@ -47,7 +47,7 @@ async function addDish(id, pool) {
 
     const insertQuery =
       "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES ?";
-    
+
     const data = [
       [
         jsonData.ID,
@@ -77,12 +77,11 @@ async function addDish(id, pool) {
           ? jsonData.Nutrition[11].Value
           : null,
       ],
-      
     ];
 
     const connection = await pool.getConnection();
     try {
-      await connection.query(insertQuery, [data]); 
+      await connection.query(insertQuery, [data]);
     } catch (error) {
       console.error("Error inserting data:", error);
     } finally {
@@ -172,8 +171,8 @@ async function getLocationData(req, res) {
       const finalDishData = enhanceDishData(jsonData, dishes);
       res.json(finalDishData);
     } else {
-      console.log("GET request failed. Status Code:", response.status);
-      res.status(response.status).send("Failed to fetch data.");
+      console.log("GET request failed. Status Code:", res.statusCode);
+      res.status(res.statusCode).send("Failed to fetch data.");
     }
   } catch (error) {
     console.error("Error fetching data:", error);

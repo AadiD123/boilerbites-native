@@ -25,11 +25,14 @@ export default function Restrictions(props) {
     handleSelectionChange(value);
   };
 
+  const customStyle = {
+    backgroundColor: "#cfb991",
+  };
+
   return (
     <FormControl fullWidth>
-      <InputLabel>Restrictions</InputLabel>
+      <InputLabel>Filter</InputLabel>
       <Select
-        label="Restrictions"
         multiple
         value={selectedOptions}
         onChange={handleChange}
@@ -38,9 +41,11 @@ export default function Restrictions(props) {
           PaperProps: {
             style: {
               maxHeight: 300,
+              backgroundColor: "#cfb991", // Set the background color for the dropdown list
             },
           },
         }}
+        style={customStyle} // Apply custom styling to the entire dropdown
       >
         {options.map((option, index) => (
           <MenuItem key={index} value={option}>

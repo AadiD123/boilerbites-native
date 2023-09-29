@@ -59,7 +59,6 @@ const Home = () => {
     const month = String(date.getMonth() + 1);
     const day = String(date.getDate());
     const formattedDate = `${year}-${month}-${day}`;
-
     return formattedDate;
   };
 
@@ -97,7 +96,6 @@ const Home = () => {
   useEffect(() => {
     setLocationTimings({});
     locations.forEach((location) => {
-      fetchLocationRatings(location);
       fetchLocationTimings(location);
       if (locationTimings[location] == null) {
         setLocationTimings((prevTimings) => ({
@@ -108,7 +106,6 @@ const Home = () => {
     });
 
     quickBites.forEach((location) => {
-      fetchLocationRatings(location);
       fetchLocationTimings(location);
       if (locationTimings[location] == null) {
         setLocationTimings((prevTimings) => ({
@@ -116,6 +113,15 @@ const Home = () => {
           [location]: "Closed",
         }));
       }
+    });
+  }, []);
+
+  useEffect(() => {
+    locations.forEach((location) => {
+      fetchLocationRatings(location);
+    });
+    quickBites.forEach((location) => {
+      fetchLocationRatings(location);
     });
   }, [selectedOptions]);
 
