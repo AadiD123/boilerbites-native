@@ -229,6 +229,7 @@ const Home = () => {
   };
 
   const handleSelectionChange = (value) => {
+    console.log(value);
     setSelectedOptions(value);
   };
 
@@ -252,8 +253,6 @@ const Home = () => {
         <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
-              {" "}
-              {/* Apply ion-text-center class */}
               <Restrictions
                 selectedOptions={selectedOptions}
                 handleSelectionChange={handleSelectionChange}
