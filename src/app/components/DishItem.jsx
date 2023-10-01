@@ -42,9 +42,10 @@ export default function DishItem(props) {
   }
 
   const fetchInfo = () => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.dishId}/`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}/`)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         setInfo(data);
       });
   };
@@ -218,22 +219,18 @@ export default function DishItem(props) {
         >
           {info.map(
             (field, index) => (
-              confirm.log(field),
+              console.log(field),
               (
                 <div key={index}>
-                  <IonText>Serving Size: {field.serving_size}</IonText>
-                  <IonText>Calories: {field.calories}</IonText>
-                  <IonText>Carbs: {field.carbs}</IonText>
-                  <IonText>Protein: {field.protein}</IonText>
-                  <IonText>Fat: {field.fat}</IonText>
+                  <Typography>Serving Size: {field.serving_size}</Typography>
+                  <Typography>Calories: {field.calories}</Typography>
+                  <Typography>Carbs: {field.carbs}</Typography>
+                  <Typography>Protein: {field.protein}</Typography>
+                  <Typography>Fat: {field.fat}</Typography>
                 </div>
               )
             )
           )}
-          <Typography>Text in a modal</Typography>
-          <Typography>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
         </Box>
       </Modal>
 
