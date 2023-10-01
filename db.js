@@ -79,7 +79,7 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
       }
   
       const insertQuery =
-        "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, carbs, protein, fat) VALUES ?";
+        "INSERT INTO boilerbites.dishes (id, dish_name, vegetarian, vegan, pork, beef, gluten, nuts, calories, fat, carbs, protein) VALUES ?";
       
       const data = [
         [
@@ -222,11 +222,10 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
         // Use node-fetch to make the HTTP request
         const response = await fetch(url);
         const data = await response.json(); // Assuming the response is JSON
-        const updateQuery = 'UPDATE boilerbites.dishes SET serving_size = ? WHERE id = ?';
+        const updateQuery = 'UPDATE boilerbites.dishes SET fat = ?, carbs = ?, protein = ? WHERE id = ?';
         console.log(url, data, id);
         if (data["Nutrition"] && data["Nutrition"][0]) {
-          const serve = [data["Nutrition"][0]["LabelValue"]];
-          await connection.query(updateQuery, [serve, id]);
+          await connection.query(updateQuery, [data["Nutrition"][3]["Value"], data["Nutrition"][7]["Value"], data["Nutrition"][11]["Value"], id]);
         }
   
         console.log(`Data for ID ${id} inserted into the database.`);
