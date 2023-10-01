@@ -16,6 +16,9 @@ import {
   IonNote,
   IonRefresher,
   IonRefresherContent,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from "@ionic/react";
 
 import { styled } from "@mui/material/styles";
@@ -233,7 +236,7 @@ const Home = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Boiler Bites</IonTitle>
+          <IonTitle size="large">Boiler Bites</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
@@ -245,12 +248,19 @@ const Home = () => {
             <IonTitle size="large">Boiler Bites</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonItem style={{ marginTop: "2em" }}>
-          <Restrictions
-            selectedOptions={selectedOptions}
-            handleSelectionChange={handleSelectionChange}
-          />
-        </IonItem>
+
+        <IonGrid>
+          <IonRow>
+            <IonCol class="ion-text-center">
+              {" "}
+              {/* Apply ion-text-center class */}
+              <Restrictions
+                selectedOptions={selectedOptions}
+                handleSelectionChange={handleSelectionChange}
+              />
+            </IonCol>
+          </IonRow>
+        </IonGrid>
 
         <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>
@@ -348,6 +358,9 @@ const Home = () => {
               ))}
             </IonList>
           </IonCardContent>
+        </IonCard>
+        <IonCard style={{ textAlign: "center", padding: "0.75em" }}>
+          <IonText>Made by Aaditya Doiphode and Armanya Maheshwari</IonText>
         </IonCard>
       </IonContent>
     </IonPage>

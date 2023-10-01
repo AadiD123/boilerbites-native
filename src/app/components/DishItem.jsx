@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { IonItem, IonButton, IonLabel, IonNote } from "@ionic/react";
+import React, { useEffect, useState, useRef } from "react";
+import { IonItem, IonLabel, IonNote } from "@ionic/react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { styled } from "@mui/material/styles";
 import StarIcon from "@mui/icons-material/Star";
@@ -9,7 +12,18 @@ import { store } from "../App";
 
 import "./DishItem.css";
 
-const DishItem = (props) => {
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
+
+export default function DishItem(props) {
   const hapticsImpactMedium = async () => {
     await Haptics.impact({ style: ImpactStyle.Medium });
   };
@@ -18,8 +32,25 @@ const DishItem = (props) => {
   const [reviews, setReviews] = useState(props.reviews || 0);
   const [starColor, setStarColor] = useState("black");
   const [precision, setPrecision] = useState(0.1);
+  const [open, setOpen] = useState(false);
+  const [info, setInfo] = useState([]);
+
+  const modal = useRef(null);
+
+  function dismiss() {
+    modal.current?.dismiss();
+  }
+
+  const fetchInfo = () => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.dishId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        setInfo(data);
+      });
+  };
 
   useEffect(() => {
+    fetchInfo();
     // dish_id -> rating_id -> rating
     const checkIfRatingExists = async () => {
       if ((await store.get(props.id)) != null) {
@@ -72,7 +103,7 @@ const DishItem = (props) => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-          }
+          },
         }
       );
       if (response.ok) {
@@ -86,11 +117,11 @@ const DishItem = (props) => {
     } catch (error) {
       console.error("Error occurred while updating rating:", error);
     }
-  }
+  };
 
   const createNewRating = async (selectedRating) => {
     console.log("create new rating", props.id, props.avg, props.reviews);
-    
+
     // Create a new rating on the server
     try {
       const response = await fetch(
@@ -159,9 +190,53 @@ const DishItem = (props) => {
     empty: <StyledStarBorderIcon fontSize="inherit" />,
   };
 
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   return (
     <IonItem>
-      <IonLabel>{props.name}</IonLabel>
+      <IonLabel onClick={handleOpen}>{props.name}</IonLabel>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "7em",
+            border: "2px solid #000",
+            backgroundColor: "#cfb991", //"#f5f5f5
+            color: "black",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          {info.map(
+            (field, index) => (
+              confirm.log(field),
+              (
+                <div key={index}>
+                  <IonText>Serving Size: {field.serving_size}</IonText>
+                  <IonText>Calories: {field.calories}</IonText>
+                  <IonText>Carbs: {field.carbs}</IonText>
+                  <IonText>Protein: {field.protein}</IonText>
+                  <IonText>Fat: {field.fat}</IonText>
+                </div>
+              )
+            )
+          )}
+          <Typography>Text in a modal</Typography>
+          <Typography>
+            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+          </Typography>
+        </Box>
+      </Modal>
+
       <Rating
         slot="end"
         name={`simple-controlled-${props.id}`}
@@ -174,9 +249,9 @@ const DishItem = (props) => {
           hapticsImpactMedium();
         }}
       />
-      <IonNote slot="end">{reviews}</IonNote>
+      <IonNote slot="end" style={{ textColor: "#daaa00" }}>
+        {reviews}
+      </IonNote>
     </IonItem>
   );
-};
-
-export default DishItem;
+}

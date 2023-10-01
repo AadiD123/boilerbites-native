@@ -26,29 +26,53 @@ export default function Restrictions(props) {
   };
 
   const customStyle = {
+    backgroundColor: "white",
+    borderRadius: "8px",
+  };
+
+  const centerDropdownStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  };
+
+  const labelStyle = {
+    fontSize: "14px",
+    color: "#555",
+  };
+
+  const menuItemStyle = {
+    fontSize: "14px",
+  };
+
+  const menuPaperStyle = {
+    maxHeight: 300,
     backgroundColor: "#cfb991",
+    ...centerDropdownStyle,
+    overflowY: "hidden",
   };
 
   return (
-    <FormControl fullWidth>
-      <InputLabel>Filter</InputLabel>
+    <FormControl style={{ width: "50%" }}>
+      <InputLabel style={labelStyle} shrink={false}>
+        Filter dishes
+      </InputLabel>
       <Select
         multiple
         value={selectedOptions}
         onChange={handleChange}
-        renderValue={(selected) => selected.join(", ")}
+        renderValue={(selected) =>
+          Array.isArray(selected) ? selected.join(", ") : ""
+        }
         MenuProps={{
           PaperProps: {
-            style: {
-              maxHeight: 300,
-              backgroundColor: "#cfb991", // Set the background color for the dropdown list
-            },
+            style: menuPaperStyle,
           },
         }}
-        style={customStyle} // Apply custom styling to the entire dropdown
+        style={customStyle}
       >
         {options.map((option, index) => (
-          <MenuItem key={index} value={option}>
+          <MenuItem key={index} value={option} style={menuItemStyle}>
             <Checkbox
               checked={selectedOptions.indexOf(option) > -1}
               onChange={handleChange}
