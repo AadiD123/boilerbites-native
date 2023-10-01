@@ -273,15 +273,6 @@ export default function DiningCourtPage(props) {
               </FormControl>
             </IonCol>
           </IonRow>
-          <IonRow>
-            <IonCol>
-              <Restrictions
-                options={options}
-                selectedOptions={selectedOptions}
-                handleSelectionChange={handleSelectionChange}
-              />
-            </IonCol>
-          </IonRow>
         </IonGrid>
 
         {selectedMeal !== "" ? (

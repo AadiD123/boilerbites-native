@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IonItem, IonLabel, IonNote } from "@ionic/react";
+import { IonItem, IonLabel, IonNote, IonList, IonTitle } from "@ionic/react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
@@ -42,7 +42,7 @@ export default function DishItem(props) {
   }
 
   const fetchInfo = () => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.dishId}/`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}/`)
       .then((response) => response.json())
       .then((data) => {
         setInfo(data);
@@ -208,32 +208,26 @@ export default function DishItem(props) {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "7em",
-            border: "2px solid #000",
+            width: "20em",
+            minHeight: "20em",
             backgroundColor: "#cfb991", //"#f5f5f5
+            padding: "2em",
             color: "black",
             boxShadow: 24,
+            borderRadius: "20px",
             p: 4,
           }}
         >
-          {info.map(
-            (field, index) => (
-              confirm.log(field),
-              (
-                <div key={index}>
-                  <IonText>Serving Size: {field.serving_size}</IonText>
-                  <IonText>Calories: {field.calories}</IonText>
-                  <IonText>Carbs: {field.carbs}</IonText>
-                  <IonText>Protein: {field.protein}</IonText>
-                  <IonText>Fat: {field.fat}</IonText>
-                </div>
-              )
-            )
-          )}
-          <Typography>Text in a modal</Typography>
-          <Typography>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
+          {info.map((field, index) => (
+            <div key={index}>
+              <h3 style={{ color: "black" }}>{props.name}</h3>
+              <p>Serving Size: {field.serving_size}</p>
+              <p>Calories: {Math.ceil(field.calories)} g</p>
+              <p>Carbs: {Math.ceil(field.carbs)} g</p>
+              <p>Protein: {Math.ceil(field.protein)} g</p>
+              <p>Fat: {Math.ceil(field.fat)} g</p>
+            </div>
+          ))}
         </Box>
       </Modal>
 
