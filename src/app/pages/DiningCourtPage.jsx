@@ -240,20 +240,20 @@ export default function DiningCourtPage(props) {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <IonItem>
-          <IonGrid>
-            {selectedMeal !== "" ? (
-              <FoodCourtCard
-                diningCourt={props.location}
-                rating={locationRating}
-                timing={times[selectedMeal]}
-              />
-            ) : (
-              <FoodCourtCard diningCourt={props.location} />
-            )}
+        <IonGrid>
+          {selectedMeal !== "" ? (
+            <FoodCourtCard
+              diningCourt={props.location}
+              rating={locationRating}
+              timing={times[selectedMeal]}
+            />
+          ) : (
+            <FoodCourtCard diningCourt={props.location} />
+          )}
 
-            <Datepicker onSelectDate={handleDateChange} />
-            <IonRow>
+          <Datepicker onSelectDate={handleDateChange} />
+          <IonRow>
+            <IonCol>
               <FormControl fullWidth>
                 <InputLabel>Select a Meal</InputLabel>
                 <Select
@@ -262,6 +262,7 @@ export default function DiningCourtPage(props) {
                   onChange={(event) => {
                     setSelectedMeal(event.target.value);
                   }}
+                  style={{ backgroundColor: "white" }}
                 >
                   {Object.keys(mealDict).map((mealName) => (
                     <MenuItem key={mealName} value={mealName}>
@@ -270,48 +271,52 @@ export default function DiningCourtPage(props) {
                   ))}
                 </Select>
               </FormControl>
+            </IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol>
               <Restrictions
                 options={options}
                 selectedOptions={selectedOptions}
                 handleSelectionChange={handleSelectionChange}
               />
-            </IonRow>
-          </IonGrid>
-        </IonItem>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
 
         {selectedMeal !== "" ? (
           mealDict[selectedMeal] != null ? (
             mealDict[selectedMeal]
-            .filter((s) => s.items.length > 0)
-            .map((stationData) => (
-              <IonCard key={stationData.stationName}>
-                <IonCardHeader>
-                  <IonCardTitle>{stationData.stationName}</IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent style={{ paddingInline: "0px" }}>
-                  <IonList>
-                    {stationData.items != null &&
-                    Array.isArray(stationData.items) ? (
-                      stationData.items
-                        .filter((dish) => dish != null) // Remove any null or undefined dishes
-                        .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
-                        .map((dish, index) => (
-                          <DishItem
-                            key={index}
-                            name={dish.dish_name}
-                            id={dish.id}
-                            avg={dish.avg}
-                            reviews={dish.reviews}
-                            date={selectedDate}
-                          />
-                        ))
-                    ) : (
-                      <p></p>
-                    )}
-                  </IonList>
-                </IonCardContent>
-              </IonCard>
-            ))
+              .filter((s) => s.items.length > 0)
+              .map((stationData) => (
+                <IonCard key={stationData.stationName}>
+                  <IonCardHeader>
+                    <IonCardTitle>{stationData.stationName}</IonCardTitle>
+                  </IonCardHeader>
+                  <IonCardContent style={{ paddingInline: "0px" }}>
+                    <IonList>
+                      {stationData.items != null &&
+                      Array.isArray(stationData.items) ? (
+                        stationData.items
+                          .filter((dish) => dish != null) // Remove any null or undefined dishes
+                          .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
+                          .map((dish, index) => (
+                            <DishItem
+                              key={index}
+                              name={dish.dish_name}
+                              id={dish.id}
+                              avg={dish.avg}
+                              reviews={dish.reviews}
+                              date={selectedDate}
+                            />
+                          ))
+                      ) : (
+                        <p></p>
+                      )}
+                    </IonList>
+                  </IonCardContent>
+                </IonCard>
+              ))
           ) : (
             <IonCard>
               <IonCardHeader>
