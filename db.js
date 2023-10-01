@@ -208,5 +208,42 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
       console.error("Error:", error);
     }
   }
+
+  async function fetchDataAndInsert() {
+    try {
+      const connection = await mysql.createConnection(dbConfig);
   
-  iterateLocationsAndDays();
+      const idQuery = 'SELECT id FROM boilerbites.dishes';
+      const [rows] = await connection.query(idQuery);
+      for (const row of rows) {
+        const id = row.id;
+        const url = `https://api.hfs.purdue.edu/menus/v2/items/${id}`;
+  
+        // Use node-fetch to make the HTTP request
+        const response = await fetch(url);
+        const data = await response.json(); // Assuming the response is JSON
+        const updateQuery = 'UPDATE boilerbites.dishes SET serving_size = ? WHERE id = ?';
+        console.log(url, data, id);
+        if (data["Nutrition"] && data["Nutrition"][0]) {
+          const serve = [data["Nutrition"][0]["LabelValue"]];
+          await connection.query(updateQuery, [serve, id]);
+        }
+  
+        console.log(`Data for ID ${id} inserted into the database.`);
+      }
+  
+      console.log('All data fetched and inserted successfully.');
+  
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      db.end();
+    }
+  }
+fetchDataAndInsert();
+// try {
+//   const connection = await mysql.createConnection(dbConfig);
+  
+// } catch (error) {
+//   console.error("Error:", error);
+// }

@@ -239,7 +239,12 @@ export default function DiningCourtPage(props) {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <IonContent fullscreen>
+      <IonHeader collapse="condense">
+          <IonToolbar>
+            <IonTitle size="large">{props.location}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
         <IonItem>
           <IonGrid>
             {selectedMeal !== "" ? (
