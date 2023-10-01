@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 export default function Restrictions(props) {
-  const { selectedOptions, handleSelectionChange } = props;
+  const { selectedOptions = [], handleSelectionChange = () => {} } = props;
 
   const options = [
     "vegetarian",
@@ -39,6 +39,7 @@ export default function Restrictions(props) {
   const labelStyle = {
     fontSize: "14px",
     color: "#555",
+    // You can add more label-related styles here
   };
 
   const menuItemStyle = {
@@ -71,8 +72,8 @@ export default function Restrictions(props) {
         }}
         style={customStyle}
       >
-        {options.map((option, index) => (
-          <MenuItem key={index} value={option} style={menuItemStyle}>
+        {options.map((option) => (
+          <MenuItem key={option} value={option} style={menuItemStyle}>
             <Checkbox
               checked={selectedOptions.indexOf(option) > -1}
               onChange={handleChange}

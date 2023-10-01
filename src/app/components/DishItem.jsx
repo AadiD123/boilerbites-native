@@ -214,7 +214,7 @@ export default function DishItem(props) {
             backgroundColor: "#cfb991", //"#f5f5f5
             padding: "2em",
             color: "black",
-            boxShadow: 24,
+            boxShadow: "none", // Remove the box shadow
             borderRadius: "20px",
             p: 4,
           }}
