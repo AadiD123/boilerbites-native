@@ -45,7 +45,6 @@ export default function DishItem(props) {
     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/dishes/${props.id}/`)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setInfo(data);
       });
   };

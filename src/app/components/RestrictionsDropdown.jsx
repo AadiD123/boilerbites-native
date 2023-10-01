@@ -62,9 +62,6 @@ export default function Restrictions(props) {
         multiple
         value={selectedOptions}
         onChange={handleChange}
-        renderValue={(selected) =>
-          Array.isArray(selected) ? selected.join(", ") : ""
-        }
         MenuProps={{
           PaperProps: {
             style: menuPaperStyle,

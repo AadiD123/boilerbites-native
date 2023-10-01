@@ -19,6 +19,8 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonSelect,
+  IonSelectOption
 } from "@ionic/react";
 
 import { styled } from "@mui/material/styles";
@@ -131,6 +133,7 @@ const Home = () => {
   const fetchLocationRatings = async (location) => {
     const date = getDate();
     const selectedOptionsQuery = selectedOptions.join(",");
+    console.log(location);
 
     try {
       const response = await fetch(
@@ -213,6 +216,16 @@ const Home = () => {
     }
   };
 
+  const fetchAllRatings = async (query) => {
+    locations.forEach((location) => {
+      fetchLocationRatings(location, query);
+    });
+    quickBites.forEach((location) => {
+      fetchLocationRatings(location, query);
+    });
+  };
+
+
   const handleRefresh = async (event) => {
     setTimeout(() => {
       locations.forEach((location) => {
@@ -228,10 +241,10 @@ const Home = () => {
     }, 2000);
   };
 
-  const handleSelectionChange = (value) => {
-    console.log(value);
-    setSelectedOptions(value);
-  };
+  // const handleSelectionChange = (value) => {
+  //   console.log(value);
+  //   setSelectedOptions(value);
+  // };
 
   return (
     <IonPage>
@@ -250,7 +263,7 @@ const Home = () => {
           </IonToolbar>
         </IonHeader>
 
-        <IonGrid>
+        {/* <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
               <Restrictions
@@ -259,7 +272,22 @@ const Home = () => {
               />
             </IonCol>
           </IonRow>
-        </IonGrid>
+        </IonGrid> */}
+
+        <IonList>
+              <IonItem>
+                <IonSelect aria-label="Filter" placeholder="Select all fruits that apply"
+                onIonChange={(e) => setSelectedOptions(e.detail.value)}
+                multiple={true}>
+                  <IonSelectOption value="vegetarian">vegetarian</IonSelectOption>
+                  <IonSelectOption value="vegan">vegan</IonSelectOption>
+                  <IonSelectOption value="no beef">no beef</IonSelectOption>
+                  <IonSelectOption value="no pork">no pork</IonSelectOption>
+                  <IonSelectOption value="gluten-free">gluten free</IonSelectOption>
+                  <IonSelectOption value="no nuts">no nuts</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+            </IonList>
 
         <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>
