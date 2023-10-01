@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IonItem, IonLabel, IonNote } from "@ionic/react";
+import { IonItem, IonLabel, IonNote, IonList, IonTitle } from "@ionic/react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
@@ -209,28 +209,26 @@ export default function DishItem(props) {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "7em",
-            border: "2px solid #000",
+            width: "20em",
+            minHeight: "20em",
             backgroundColor: "#cfb991", //"#f5f5f5
+            padding: "2em",
             color: "black",
             boxShadow: 24,
+            borderRadius: "20px",
             p: 4,
           }}
         >
-          {info.map(
-            (field, index) => (
-              console.log(field),
-              (
-                <div key={index}>
-                  <Typography>Serving Size: {field.serving_size}</Typography>
-                  <Typography>Calories: {field.calories}</Typography>
-                  <Typography>Carbs: {field.carbs}</Typography>
-                  <Typography>Protein: {field.protein}</Typography>
-                  <Typography>Fat: {field.fat}</Typography>
-                </div>
-              )
-            )
-          )}
+          {info.map((field, index) => (
+            <div key={index}>
+              <h3 style={{ color: "black" }}>{props.name}</h3>
+              <p>Serving Size: {field.serving_size}</p>
+              <p>Calories: {Math.ceil(field.calories)} g</p>
+              <p>Carbs: {Math.ceil(field.carbs)} g</p>
+              <p>Protein: {Math.ceil(field.protein)} g</p>
+              <p>Fat: {Math.ceil(field.fat)} g</p>
+            </div>
+          ))}
         </Box>
       </Modal>
 
