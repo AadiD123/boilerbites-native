@@ -43,6 +43,7 @@ import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
 import Restrictions from "../components/RestrictionsDropdown";
+import { get } from "mongoose";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -51,6 +52,8 @@ export default function DiningCourtPage(props) {
   const [locationRating, setLocationRating] = useState(0);
   const [times, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
+
+  var formattedDate;
 
   const history = useHistory();
 
@@ -103,131 +106,130 @@ export default function DiningCourtPage(props) {
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1);
     const day = String(selectedDate.getDate());
-    const formattedDate = `${year}-${month}-${day}`;
+    formattedDate = `${year}-${month}-${day}`;
 
-    const getFilters = async () => {
-      const storedFilters = await store.get("selectedFilters");
-      if (storedFilters) {
-        setSelectedOptions(JSON.parse(storedFilters));
+    fetchData();
+  }, [selectedDate, selectedMeal]);
+
+  const fetchData = async () => {
+    const storedFilters = await store.get("selectedFilters");
+    if (storedFilters) {
+      setSelectedOptions(JSON.parse(storedFilters));
+    }
+
+    await fetchLocationTimings();
+    await fetchLocationRating();
+    await fetchCurrentMeal();
+  };
+
+  const fetchCurrentMeal = async () => {
+    const response = await fetch(
+      selectedOptions === ""
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+            props.location
+          }/${formattedDate}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+            props.location
+          }/${formattedDate}/?restrict=${selectedOptions}`
+    );
+    if (response.ok) {
+      const data = await response.json();
+
+      const mealDict = {};
+
+      for (const meal of data) {
+        // setMeals((meals) => [...meals, meal["meal_name"]]);
+
+        if (selectedMeal == "") {
+          setSelectedMeal(meal["meal_name"]);
+          console.log(selectedMeal);
+        }
+
+        const stationsArray = meal["stations"].map((station) => {
+          const stationName = station["station_name"];
+          const items = station["items"];
+          return { stationName, items };
+        });
+
+        mealDict[meal["meal_name"]] = stationsArray;
       }
-    };
-    getFilters();
 
-    console.log("selectedOptions", selectedOptions);
+      setMealDict(mealDict);
+    } else {
+      console.log("Error fetching data");
+    }
+  };
 
-    const fetchCurrentMeal = async () => {
+  const fetchLocationTimings = async () => {
+    try {
       const response = await fetch(
         selectedOptions === ""
-          ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+          ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
               props.location
             }/${formattedDate}`
-          : `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
+          : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
               props.location
             }/${formattedDate}/?restrict=${selectedOptions}`
       );
       if (response.ok) {
-        const data = await response.json();
+        const locationTimes = await response.json();
 
-        const mealDict = {};
+        const currentTime = getCurrentTime(selectedDate);
 
-        for (const meal of data) {
-          // setMeals((meals) => [...meals, meal["meal_name"]]);
+        for (const timing of locationTimes) {
+          const startTime = convertTo12HourFormat(timing.timing[0]);
+          const endTime = convertTo12HourFormat(timing.timing[1]);
 
-          if (selectedMeal == "") {
-            setSelectedMeal(meal["meal_name"]);
-            console.log(selectedMeal);
-          }
-
-          const stationsArray = meal["stations"].map((station) => {
-            const stationName = station["station_name"];
-            const items = station["items"];
-            return { stationName, items };
-          });
-
-          mealDict[meal["meal_name"]] = stationsArray;
-        }
-
-        setMealDict(mealDict);
-      } else {
-        console.log("Error fetching data");
-      }
-    };
-
-    const fetchLocationTimings = async () => {
-      try {
-        const response = await fetch(
-          selectedOptions === ""
-            ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
-                props.location
-              }/${formattedDate}`
-            : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
-                props.location
-              }/${formattedDate}/?restrict=${selectedOptions}`
-        );
-        if (response.ok) {
-          const locationTimes = await response.json();
-
-          const currentTime = getCurrentTime(selectedDate);
-
-          for (const timing of locationTimes) {
-            const startTime = convertTo12HourFormat(timing.timing[0]);
-            const endTime = convertTo12HourFormat(timing.timing[1]);
-
-            if (timing.status == "Closed") {
-              setTimes((otherTimes) => ({
-                ...otherTimes,
-                [timing["meal_name"]]: "Closed",
-              }));
-              continue;
-            }
-
+          if (timing.status == "Closed") {
             setTimes((otherTimes) => ({
               ...otherTimes,
-              [timing["meal_name"]]: startTime + " - " + endTime,
+              [timing["meal_name"]]: "Closed",
             }));
-
-            // if (timing.status === "Open") {
-            //   // check if current time is within meal time
-            //   if (
-            //     currentTime >= timing.timing[0] &&
-            //     currentTime <= timing.timing[1]
-            //   ) {
-            //     // convert timing to 12 hour format
-            //     setSelectedMeal(timing["meal_name"]);
-            //   }
-            // }
+            continue;
           }
-        }
-      } catch (error) {
-        console.error("Error fetching location times:", error);
-      }
-    };
 
-    const fetchLocationRating = async () => {
-      try {
-        const response = await fetch(
-          selectedOptions === ""
-            ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
-                props.location
-              }/${formattedDate}`
-            : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
-                props.location
-              }/${formattedDate}/?restrict=${selectedOptions}`
-        );
-        if (response.ok) {
-          const rating = await response.json();
-          setLocationRating(rating.averageStars);
-          console.log(locationRating);
-        }
-      } catch (error) {
-        console.error("Error fetching location times:", error);
-      }
-    };
+          setTimes((otherTimes) => ({
+            ...otherTimes,
+            [timing["meal_name"]]: startTime + " - " + endTime,
+          }));
 
-    fetchCurrentMeal();
-    fetchLocationRating();
-    fetchLocationTimings();
-  }, [selectedDate, selectedMeal]);
+          // if (timing.status === "Open") {
+          //   // check if current time is within meal time
+          //   if (
+          //     currentTime >= timing.timing[0] &&
+          //     currentTime <= timing.timing[1]
+          //   ) {
+          //     // convert timing to 12 hour format
+          //     setSelectedMeal(timing["meal_name"]);
+          //   }
+          // }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching location times:", error);
+    }
+  };
+
+  const fetchLocationRating = async () => {
+    try {
+      const response = await fetch(
+        selectedOptions === ""
+          ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
+              props.location
+            }/${formattedDate}`
+          : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
+              props.location
+            }/${formattedDate}/?restrict=${selectedOptions}`
+      );
+      if (response.ok) {
+        const rating = await response.json();
+        setLocationRating(rating.averageStars);
+        console.log(locationRating);
+      }
+    } catch (error) {
+      console.error("Error fetching location times:", error);
+    }
+  };
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -247,6 +249,7 @@ export default function DiningCourtPage(props) {
               onClick={handleBackButtonClick}
             />
           </IonButtons>
+          <IonTitle>{props.location}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
