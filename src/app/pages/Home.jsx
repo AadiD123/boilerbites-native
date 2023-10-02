@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   IonContent,
   IonHeader,
@@ -20,7 +21,7 @@ import {
   IonRow,
   IonCol,
   IonSelect,
-  IonSelectOption
+  IonSelectOption,
 } from "@ionic/react";
 
 import { styled } from "@mui/material/styles";
@@ -28,9 +29,13 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Rating from "@mui/material/Rating";
 
+import { store } from "../App";
+
 import "./Home.css";
-import React, { useState, useEffect } from "react";
+
 import Restrictions from "../components/RestrictionsDropdown";
+import { Filter } from "@mui/icons-material";
+import FilterDropdown from "../components/FilterDropdown";
 
 const Home = () => {
   const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand"];
@@ -225,7 +230,6 @@ const Home = () => {
     });
   };
 
-
   const handleRefresh = async (event) => {
     setTimeout(() => {
       locations.forEach((location) => {
@@ -241,10 +245,11 @@ const Home = () => {
     }, 2000);
   };
 
-  // const handleSelectionChange = (value) => {
-  //   console.log(value);
-  //   setSelectedOptions(value);
-  // };
+  const handleSelectionChange = (value) => {
+    console.log(value);
+
+    setSelectedOptions(value);
+  };
 
   return (
     <IonPage>
@@ -263,31 +268,33 @@ const Home = () => {
           </IonToolbar>
         </IonHeader>
 
-        {/* <IonGrid>
+        <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
-              <Restrictions
+              {/* <Restrictions
                 selectedOptions={selectedOptions}
                 handleSelectionChange={handleSelectionChange}
-              />
+              /> */}
+              <FilterDropdown />
             </IonCol>
           </IonRow>
-        </IonGrid> */}
+        </IonGrid>
 
-        <IonList>
-              <IonItem>
-                <IonSelect aria-label="Filter" placeholder="Select all fruits that apply"
-                onIonChange={(e) => setSelectedOptions(e.detail.value)}
-                multiple={true}>
-                  <IonSelectOption value="vegetarian">vegetarian</IonSelectOption>
-                  <IonSelectOption value="vegan">vegan</IonSelectOption>
-                  <IonSelectOption value="no beef">no beef</IonSelectOption>
-                  <IonSelectOption value="no pork">no pork</IonSelectOption>
-                  <IonSelectOption value="gluten-free">gluten free</IonSelectOption>
-                  <IonSelectOption value="no nuts">no nuts</IonSelectOption>
-                </IonSelect>
-              </IonItem>
-            </IonList>
+        {/* <IonItem>
+          <IonSelect
+            aria-label="Filter"
+            placeholder="Select all fruits that apply"
+            onIonChange={(e) => setSelectedOptions(e.detail.value)}
+            multiple={true}
+          >
+            <IonSelectOption value="vegetarian">vegetarian</IonSelectOption>
+            <IonSelectOption value="vegan">vegan</IonSelectOption>
+            <IonSelectOption value="no beef">no beef</IonSelectOption>
+            <IonSelectOption value="no pork">no pork</IonSelectOption>
+            <IonSelectOption value="gluten-free">gluten free</IonSelectOption>
+            <IonSelectOption value="no nuts">no nuts</IonSelectOption>
+          </IonSelect>
+        </IonItem> */}
 
         <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>

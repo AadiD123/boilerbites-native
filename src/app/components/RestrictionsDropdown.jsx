@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 export default function Restrictions(props) {
-  const { selectedOptions = [], handleSelectionChange = () => {} } = props;
+  const { selectedOptions, handleSelectionChange } = props;
 
   const options = [
     "vegetarian",
@@ -39,7 +39,6 @@ export default function Restrictions(props) {
   const labelStyle = {
     fontSize: "14px",
     color: "#555",
-    // You can add more label-related styles here
   };
 
   const menuItemStyle = {
@@ -55,9 +54,7 @@ export default function Restrictions(props) {
 
   return (
     <FormControl style={{ width: "50%" }}>
-      <InputLabel style={labelStyle} shrink={false}>
-        Filter dishes
-      </InputLabel>
+      <InputLabel style={labelStyle}>Filter dishes</InputLabel>
       <Select
         multiple
         value={selectedOptions}
@@ -68,6 +65,15 @@ export default function Restrictions(props) {
           },
         }}
         style={customStyle}
+        renderValue={(selected) => (
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {selected.map((value) => (
+              <div key={value} style={{ margin: "4px" }}>
+                {value}
+              </div>
+            ))}
+          </div>
+        )}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option} style={menuItemStyle}>

@@ -36,6 +36,8 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import "./DiningCourtPage.css";
 
+import { store } from "../App";
+
 // Components
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
@@ -45,19 +47,26 @@ import Restrictions from "../components/RestrictionsDropdown";
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState("");
   const [locationRating, setLocationRating] = useState(0);
   const [times, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
 
-  const options = [
-    "vegetarian",
-    "vegan",
-    "no beef",
-    "no pork",
-    "gluten-free",
-    "no nuts",
-  ];
+  const history = useHistory();
+
+  const handleBackButtonClick = () => {
+    // Navigate to the home page route
+    history.push("/home");
+  };
+
+  // const options = [
+  //   "vegetarian",
+  //   "vegan",
+  //   "no beef",
+  //   "no pork",
+  //   "gluten-free",
+  //   "no nuts",
+  // ];
 
   const getCurrentTime = () => {
     const currentTime = new Date();
@@ -90,30 +99,31 @@ export default function DiningCourtPage(props) {
     return `${hour}:${minutes} ${period}`;
   };
 
-  const history = useHistory();
-
-  const handleBackButtonClick = () => {
-    // Navigate to the home page route
-    history.push("/home");
-  };
-
   useEffect(() => {
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1);
     const day = String(selectedDate.getDate());
     const formattedDate = `${year}-${month}-${day}`;
 
-    const selectedOptionsQuery = selectedOptions.join(",");
+    const getFilters = async () => {
+      const storedFilters = await store.get("selectedFilters");
+      if (storedFilters) {
+        setSelectedOptions(JSON.parse(storedFilters));
+      }
+    };
+    getFilters();
+
+    console.log("selectedOptions", selectedOptions);
 
     const fetchCurrentMeal = async () => {
       const response = await fetch(
-        selectedOptionsQuery === ""
+        selectedOptions === ""
           ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
               props.location
             }/${formattedDate}`
           : `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
               props.location
-            }/${formattedDate}/?restrict=${selectedOptionsQuery}`
+            }/${formattedDate}/?restrict=${selectedOptions}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -146,13 +156,13 @@ export default function DiningCourtPage(props) {
     const fetchLocationTimings = async () => {
       try {
         const response = await fetch(
-          selectedOptionsQuery === ""
+          selectedOptions === ""
             ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
                 props.location
               }/${formattedDate}`
             : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
                 props.location
-              }/${formattedDate}/?restrict=${selectedOptionsQuery}`
+              }/${formattedDate}/?restrict=${selectedOptions}`
         );
         if (response.ok) {
           const locationTimes = await response.json();
@@ -196,13 +206,13 @@ export default function DiningCourtPage(props) {
     const fetchLocationRating = async () => {
       try {
         const response = await fetch(
-          selectedOptionsQuery === ""
+          selectedOptions === ""
             ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
                 props.location
               }/${formattedDate}`
             : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
                 props.location
-              }/${formattedDate}/?restrict=${selectedOptionsQuery}`
+              }/${formattedDate}/?restrict=${selectedOptions}`
         );
         if (response.ok) {
           const rating = await response.json();
@@ -217,7 +227,7 @@ export default function DiningCourtPage(props) {
     fetchCurrentMeal();
     fetchLocationRating();
     fetchLocationTimings();
-  }, [selectedDate, selectedOptions]);
+  }, [selectedDate, selectedMeal]);
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
