@@ -113,7 +113,6 @@ const Home = () => {
         }));
       }
     });
-
     quickBites.forEach((location) => {
       fetchLocationTimings(location);
       if (locationTimings[location] == null) {
@@ -132,12 +131,11 @@ const Home = () => {
     quickBites.forEach((location) => {
       fetchLocationRatings(location);
     });
+    console.log("filter", selectedOptions);
   }, [selectedOptions]);
 
   const fetchLocationRatings = async (location) => {
     const date = getDate();
-    console.log(location);
-
     try {
       const response = await fetch(
         selectedOptions === ""
@@ -269,10 +267,7 @@ const Home = () => {
         <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
-              <FilterDropdown
-                selectedOptions={selectedOptions}
-                setSelectedOptions={setSelectedOptions}
-              />
+              <FilterDropdown setSelectedOptions={setSelectedOptions} />
             </IonCol>
           </IonRow>
         </IonGrid>

@@ -39,10 +39,7 @@ function getStyles(name, filterName, theme) {
   };
 }
 
-export default function FilterDropdown({
-  selectedOptions,
-  setSelectedOptions,
-}) {
+export default function FilterDropdown({ setSelectedOptions }) {
   const theme = useTheme();
   const [filter, setFilterName] = useState([]);
 
@@ -53,8 +50,8 @@ export default function FilterDropdown({
         setFilterName(JSON.parse(storedFilters));
       }
     };
-    setSelectedOptions(filter);
     getFilters();
+    setSelectedOptions(filter);
   }, [setSelectedOptions]);
 
   const handleChange = async (event) => {
@@ -62,8 +59,8 @@ export default function FilterDropdown({
       target: { value },
     } = event;
     setFilterName(value);
-    setSelectedOptions(filter);
     await store.set("selectedFilters", JSON.stringify(value));
+    setSelectedOptions(value);
   };
 
   return (

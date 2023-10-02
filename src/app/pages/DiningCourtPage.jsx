@@ -23,14 +23,7 @@ import {
   IonLoading,
 } from "@ionic/react";
 
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Button,
-  CircularProgress,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
 import "./DiningCourtPage.css";
@@ -41,7 +34,6 @@ import { store } from "../App";
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
-import { get } from "mongoose";
 
 export default function DiningCourtPage(props) {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -52,15 +44,6 @@ export default function DiningCourtPage(props) {
   const [mealDict, setMealDict] = useState({});
 
   var formattedDate;
-
-  // const options = [
-  //   "vegetarian",
-  //   "vegan",
-  //   "no beef",
-  //   "no pork",
-  //   "gluten-free",
-  //   "no nuts",
-  // ];
 
   const getCurrentTime = () => {
     const currentTime = new Date();
@@ -94,18 +77,18 @@ export default function DiningCourtPage(props) {
   };
 
   useEffect(() => {
+    fetchData();
+  }, [selectedDate, selectedMeal, selectedOptions]);
+
+  const fetchData = async () => {
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1);
     const day = String(selectedDate.getDate());
     formattedDate = `${year}-${month}-${day}`;
 
-    fetchData();
-  }, [selectedDate, selectedMeal]);
-
-  const fetchData = async () => {
     const storedFilters = await store.get("selectedFilters");
     if (storedFilters) {
-      setSelectedOptions(JSON.parse(storedFilters));
+      setSelectedOptions(JSON.parse(storedFilters).join(","));
     }
 
     await fetchLocationTimings();
