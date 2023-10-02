@@ -33,7 +33,6 @@ import {
 } from "@mui/material";
 
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
 import "./DiningCourtPage.css";
 
 import { store } from "../App";
@@ -42,7 +41,6 @@ import { store } from "../App";
 import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
-import Restrictions from "../components/RestrictionsDropdown";
 import { get } from "mongoose";
 
 export default function DiningCourtPage(props) {
@@ -54,13 +52,6 @@ export default function DiningCourtPage(props) {
   const [mealDict, setMealDict] = useState({});
 
   var formattedDate;
-
-  const history = useHistory();
-
-  const handleBackButtonClick = () => {
-    // Navigate to the home page route
-    history.push("/home");
-  };
 
   // const options = [
   //   "vegetarian",
@@ -244,10 +235,7 @@ export default function DiningCourtPage(props) {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton
-              defaultHref="/home"
-              onClick={handleBackButtonClick}
-            />
+            <IonBackButton defaultHref="/home" />
           </IonButtons>
           <IonTitle>{props.location}</IonTitle>
         </IonToolbar>

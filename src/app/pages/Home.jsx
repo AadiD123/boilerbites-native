@@ -33,7 +33,6 @@ import { store } from "../App";
 
 import "./Home.css";
 
-import Restrictions from "../components/RestrictionsDropdown";
 import { Filter } from "@mui/icons-material";
 import FilterDropdown from "../components/FilterDropdown";
 
@@ -46,7 +45,7 @@ const Home = () => {
     "The Gathering Place",
   ];
 
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState("");
   const [locationRatings, setLocationRatings] = useState({});
   const [locationTimings, setLocationTimings] = useState({});
 
@@ -137,18 +136,17 @@ const Home = () => {
 
   const fetchLocationRatings = async (location) => {
     const date = getDate();
-    const selectedOptionsQuery = selectedOptions.join(",");
     console.log(location);
 
     try {
       const response = await fetch(
-        selectedOptionsQuery === ""
+        selectedOptions === ""
           ? `${
               import.meta.env.VITE_API_BASE_URL
             }/api/dinings/rating/${location}/${date}`
           : `${
               import.meta.env.VITE_API_BASE_URL
-            }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptionsQuery}`
+            }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptions}`
       );
 
       if (response.ok) {
@@ -271,11 +269,10 @@ const Home = () => {
         <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
-              {/* <Restrictions
+              <FilterDropdown
                 selectedOptions={selectedOptions}
-                handleSelectionChange={handleSelectionChange}
-              /> */}
-              <FilterDropdown />
+                setSelectedOptions={setSelectedOptions}
+              />
             </IonCol>
           </IonRow>
         </IonGrid>

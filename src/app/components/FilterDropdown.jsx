@@ -7,7 +7,6 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Chip from "@mui/material/Chip";
-import { CheckBox } from "@mui/icons-material";
 
 import { store } from "../App";
 
@@ -40,27 +39,30 @@ function getStyles(name, filterName, theme) {
   };
 }
 
-export default function FilterDropdown() {
+export default function FilterDropdown({
+  selectedOptions,
+  setSelectedOptions,
+}) {
   const theme = useTheme();
   const [filter, setFilterName] = useState([]);
 
   useEffect(() => {
-    // Load previously stored filters from local storage (or any other storage mechanism)
     const getFilters = async () => {
       const storedFilters = await store.get("selectedFilters");
       if (storedFilters) {
         setFilterName(JSON.parse(storedFilters));
       }
     };
+    setSelectedOptions(filter);
     getFilters();
-  });
+  }, [setSelectedOptions]);
 
   const handleChange = async (event) => {
     const {
       target: { value },
     } = event;
     setFilterName(value);
-    // Store selected filters in local storage
+    setSelectedOptions(filter);
     await store.set("selectedFilters", JSON.stringify(value));
   };
 
