@@ -24,8 +24,9 @@ import {
 } from "@ionic/react";
 
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-
+import { GroupedVirtuoso } from 'react-virtuoso'
 import React, { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
 import "./DiningCourtPage.css";
 
 import { store } from "../App";
@@ -35,15 +36,19 @@ import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
 
-export default function DiningCourtPage(props) {
+export default function DiningCourtPage() {  
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedOptions, setSelectedOptions] = useState("");
   const [locationRating, setLocationRating] = useState(0);
   const [times, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
+  let stationItems = [];
+  
+  const { place } = useParams();
+  console.log(place);
 
-  var formattedDate;
+  let formattedDate;
 
   const getCurrentTime = () => {
     const currentTime = new Date();
@@ -76,6 +81,11 @@ export default function DiningCourtPage(props) {
     return `${hour}:${minutes} ${period}`;
   };
 
+  const getCounts = (data) => {
+    console.log(data.filter((s) => s.items.length > 0).map((s) => s.items.length));
+    return data.filter((s) => s.items.length > 0).map((s) => s.items.length);
+  };
+
   useEffect(() => {
     
     fetchData();
@@ -102,10 +112,10 @@ export default function DiningCourtPage(props) {
     const response = await fetch(
       selectedOptions === ""
         ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
-            props.location
+            place
           }/${formattedDate}`
         : `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
-            props.location
+            place
           }/${formattedDate}/?restrict=${selectedOptions}`
     );
     if (response.ok) {
@@ -140,10 +150,10 @@ export default function DiningCourtPage(props) {
       const response = await fetch(
         selectedOptions === ""
           ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
-              props.location
+              place
             }/${formattedDate}`
           : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/timing/${
-              props.location
+            place
             }/${formattedDate}/?restrict=${selectedOptions}`
       );
       if (response.ok) {
@@ -191,10 +201,10 @@ export default function DiningCourtPage(props) {
       const response = await fetch(
         selectedOptions === ""
           ? `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
-              props.location
+            place
             }/${formattedDate}`
           : `${import.meta.env.VITE_API_BASE_URL}/api/dinings/rating/${
-              props.location
+            place
             }/${formattedDate}/?restrict=${selectedOptions}`
       );
       if (response.ok) {
@@ -222,19 +232,19 @@ export default function DiningCourtPage(props) {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/home" />
           </IonButtons>
-          <IonTitle>{props.location}</IonTitle>
+          <IonTitle>{place}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
         <IonGrid>
           {selectedMeal !== "" ? (
             <FoodCourtCard
-              diningCourt={props.location}
+              diningCourt={place}
               rating={locationRating}
               timing={times[selectedMeal]}
             />
           ) : (
-            <FoodCourtCard diningCourt={props.location} />
+            <FoodCourtCard diningCourt={place} />
           )}
 
           <Datepicker onSelectDate={handleDateChange} />
@@ -260,41 +270,70 @@ export default function DiningCourtPage(props) {
             </IonCol>
           </IonRow>
         </IonGrid>
-
+        
         {selectedMeal !== "" ? (
           mealDict[selectedMeal] != null ? (
-            mealDict[selectedMeal]
-              .filter((s) => s.items.length > 0)
-              .map((stationData) => (
-                <IonCard key={stationData.stationName}>
-                  <IonCardHeader>
-                    <IonCardTitle>{stationData.stationName}</IonCardTitle>
-                  </IonCardHeader>
-                  <IonCardContent style={{ paddingInline: "0px" }}>
-                    <IonList>
-                      {stationData.items != null &&
-                      Array.isArray(stationData.items) ? (
-                        stationData.items
-                          .filter((dish) => dish != null) // Remove any null or undefined dishes
+            <GroupedVirtuoso
+            style={{ height: "500px" }}
+            groupCounts={getCounts(mealDict[selectedMeal])}
+            groupContent={index => {
+              return (
+                <div>
+                  <IonCardTitle>{mealDict[selectedMeal][index].stationName}</IonCardTitle>
+                </div>
+              );
+            }}
+
+            itemContent={index => {
+              return (
+                <IonList>
+                        {mealDict[selectedMeal][index].items
                           .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
-                          .map((dish, index) => (
-                            <DishItem
-                              key={index}
-                              name={dish.dish_name}
+                         .map((dish, index2) => (
+                           <DishItem
+                              key={index2}
+                             name={dish.dish_name}
                               id={dish.id}
-                              avg={dish.avg}
-                              reviews={dish.reviews}
-                              date={selectedDate}
+                               avg={dish.avg}
+                               reviews={dish.reviews}
+                               date={selectedDate}
                             />
-                          ))
-                      ) : (
-                        <p></p>
-                      )}
-                    </IonList>
-                  </IonCardContent>
-                </IonCard>
-              ))
-          ) : (
+                           ))}
+                     </IonList>
+              )
+            }}
+            // mealDict[selectedMeal]
+            //   .filter((s) => s.items.length > 0) 
+            //   .map((stationData) => (
+            //     <IonCard key={stationData.stationName}>
+            //       <IonCardHeader>
+            //         <IonCardTitle>{stationData.stationName}</IonCardTitle>
+            //       </IonCardHeader>
+            //       <IonCardContent style={{ paddingInline: "0px" }}>
+            //         <IonList>
+            //           {stationData.items != null &&
+            //           Array.isArray(stationData.items) ? (
+            //             stationData.items
+            //               .filter((dish) => dish != null) // Remove any null or undefined dishes
+            //               .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
+            //               .map((dish, index) => (
+            //                 <DishItem
+            //                   key={index}
+            //                   name={dish.dish_name}
+            //                   id={dish.id}
+            //                   avg={dish.avg}
+            //                   reviews={dish.reviews}
+            //                   date={selectedDate}
+            //                 />
+            //               ))
+            //           ) : (
+            //             <p></p>
+            //           )}
+            //         </IonList>
+            //       </IonCardContent>
+            //     </IonCard>
+            //   ))
+          />) : (
             <IonCard>
               <IonCardHeader>
                 <IonCardSubtitle>No meals served</IonCardSubtitle>
