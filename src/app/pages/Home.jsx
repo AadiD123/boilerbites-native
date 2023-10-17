@@ -217,15 +217,6 @@ const Home = () => {
     }
   };
 
-  const fetchAllRatings = async (query) => {
-    locations.forEach((location) => {
-      fetchLocationRatings(location, query);
-    });
-    quickBites.forEach((location) => {
-      fetchLocationRatings(location, query);
-    });
-  };
-
   const handleRefresh = async (event) => {
     setTimeout(() => {
       locations.forEach((location) => {
@@ -238,7 +229,7 @@ const Home = () => {
         fetchLocationTimings(location);
       });
       event.detail.complete();
-    }, 2000);
+    });
   };
 
   const handleSelectionChange = (value) => {

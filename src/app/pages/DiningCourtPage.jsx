@@ -77,6 +77,7 @@ export default function DiningCourtPage(props) {
   };
 
   useEffect(() => {
+    
     fetchData();
   }, [selectedDate, selectedMeal, selectedOptions]);
 
@@ -92,11 +93,12 @@ export default function DiningCourtPage(props) {
     }
 
     await fetchLocationTimings();
-    await fetchLocationRating();
     await fetchCurrentMeal();
+    await fetchCurrentLocationRating();
   };
 
   const fetchCurrentMeal = async () => {
+    console.log("Fetching current meal");
     const response = await fetch(
       selectedOptions === ""
         ? `${import.meta.env.VITE_API_BASE_URL}/api/dishes/${
@@ -112,8 +114,6 @@ export default function DiningCourtPage(props) {
       const mealDict = {};
 
       for (const meal of data) {
-        // setMeals((meals) => [...meals, meal["meal_name"]]);
-
         if (selectedMeal == "") {
           setSelectedMeal(meal["meal_name"]);
           console.log(selectedMeal);
@@ -135,6 +135,7 @@ export default function DiningCourtPage(props) {
   };
 
   const fetchLocationTimings = async () => {
+    console.log("Fetching location timings");
     try {
       const response = await fetch(
         selectedOptions === ""
@@ -149,6 +150,7 @@ export default function DiningCourtPage(props) {
         const locationTimes = await response.json();
 
         const currentTime = getCurrentTime(selectedDate);
+        console.log("Current time ", currentTime);
 
         for (const timing of locationTimes) {
           const startTime = convertTo12HourFormat(timing.timing[0]);
@@ -167,16 +169,15 @@ export default function DiningCourtPage(props) {
             [timing["meal_name"]]: startTime + " - " + endTime,
           }));
 
-          // if (timing.status === "Open") {
-          //   // check if current time is within meal time
-          //   if (
-          //     currentTime >= timing.timing[0] &&
-          //     currentTime <= timing.timing[1]
-          //   ) {
-          //     // convert timing to 12 hour format
-          //     setSelectedMeal(timing["meal_name"]);
-          //   }
-          // }
+          if (timing.status === "Open") {
+            // check if current time is within meal time
+            if (
+              currentTime >= timing.timing[0] &&
+              currentTime <= timing.timing[1]
+            ) {
+              setSelectedMeal(timing["meal_name"]);
+            }
+          }
         }
       }
     } catch (error) {
@@ -184,7 +185,8 @@ export default function DiningCourtPage(props) {
     }
   };
 
-  const fetchLocationRating = async () => {
+  const fetchCurrentLocationRating = async () => {
+    console.log("Fetching location rating");
     try {
       const response = await fetch(
         selectedOptions === ""
