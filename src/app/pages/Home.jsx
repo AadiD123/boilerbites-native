@@ -296,7 +296,7 @@ const Home = () => {
             <IonList>
               {locations.map((location, index) => (
                 <IonItem
-                  routerLink={`/${location}`}
+                  routerLink={`/residential/${location}`}
                   key={index}
                   style={{
                     display: "flex",
@@ -345,7 +345,7 @@ const Home = () => {
             <IonList>
               {quickBites.map((location, index) => (
                 <IonItem
-                  routerLink={`/${location}`}
+                  routerLink={`/residential/${location}`}
                   key={index}
                   style={{
                     display: "flex",

@@ -239,7 +239,7 @@ const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand",
       db.end();
     }
   }
-fetchDataAndInsert();
+iterateLocationsAndDays();
 // try {
 //   const connection = await mysql.createConnection(dbConfig);
   

@@ -39,7 +39,12 @@ const App = () => (
         <Route exact path="/home">
           <Home />
         </Route>
-        <Route exact path="/earhart">
+        <Route exact path="/">
+          <Redirect to="/home" />
+        </Route>
+        <Route path="/residential/:place" component={DiningCourtPage} />
+
+        {/* <Route exact path="/earhart">
           <DiningCourtPage location="Earhart" />
         </Route>
         <Route exact path="/ford">
@@ -65,10 +70,7 @@ const App = () => (
         </Route>
         <Route exact path="/The Gathering Place">
           <DiningCourtPage location="The Gathering Place" />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
+        </Route> */}
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
