@@ -42,7 +42,10 @@ const App = () => (
         <Route exact path="/">
           <Redirect to="/home" />
         </Route>
-        <Route path="/residential/:place" component={DiningCourtPage} />
+        <Route
+          path="/residential/:place/:restrictions?"
+          component={DiningCourtPage}
+        />
 
         {/* <Route exact path="/earhart">
           <DiningCourtPage location="Earhart" />

@@ -287,7 +287,7 @@ const Home = () => {
             <IonList>
               {locations.map((location, index) => (
                 <IonItem
-                  routerLink={`/residential/${location}`}
+                  routerLink={`/residential/${location}/${selectedOptions}`}
                   key={index}
                   style={{
                     display: "flex",
@@ -336,7 +336,7 @@ const Home = () => {
             <IonList>
               {quickBites.map((location, index) => (
                 <IonItem
-                  routerLink={`/residential/${location}`}
+                  routerLink={`/residential/${location}/${selectedOptions}`}
                   key={index}
                   style={{
                     display: "flex",
@@ -377,7 +377,7 @@ const Home = () => {
           </IonCardContent>
         </IonCard>
         <IonCard style={{ textAlign: "center", padding: "0.75em" }}>
-          <IonText>Made by Aaditya Doiphode and Armanya Maheshwari</IonText>
+          <IonText>@ by Aaditya and Armanya</IonText>
         </IonCard>
       </IonContent>
     </IonPage>
