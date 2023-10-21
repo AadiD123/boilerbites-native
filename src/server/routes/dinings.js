@@ -1,6 +1,9 @@
 const express = require("express");
 
-const { getDiningCourtRating, getDiningTiming } = require("../controllers/diningController");
+const {
+  getDiningCourtRating,
+  getDiningTiming,
+} = require("../controllers/diningController");
 
 const router = express.Router();
 
@@ -9,9 +12,7 @@ router.use((req, res, next) => {
   next();
 });
 
-
 router.get("/rating/:location/:date", getDiningCourtRating);
-router.get("/timing/:location/:date", getDiningTiming);
-
+router.get("/timing/:location/:date/:time", getDiningTiming);
 
 module.exports = router;

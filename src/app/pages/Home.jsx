@@ -102,135 +102,135 @@ const Home = () => {
     return `${hour}:${minutes} ${period}`;
   };
 
-  useEffect(() => {
-    setLocationTimings({});
-    locations.forEach((location) => {
-      fetchLocationTimings(location);
-      if (locationTimings[location] == null) {
-        setLocationTimings((prevTimings) => ({
-          ...prevTimings,
-          [location]: "Closed",
-        }));
-      }
-    });
-    quickBites.forEach((location) => {
-      fetchLocationTimings(location);
-      if (locationTimings[location] == null) {
-        setLocationTimings((prevTimings) => ({
-          ...prevTimings,
-          [location]: "Closed",
-        }));
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   setLocationTimings({});
+  //   locations.forEach((location) => {
+  //     fetchLocationTimings(location);
+  //     if (locationTimings[location] == null) {
+  //       setLocationTimings((prevTimings) => ({
+  //         ...prevTimings,
+  //         [location]: "Closed",
+  //       }));
+  //     }
+  //   });
+  //   quickBites.forEach((location) => {
+  //     fetchLocationTimings(location);
+  //     if (locationTimings[location] == null) {
+  //       setLocationTimings((prevTimings) => ({
+  //         ...prevTimings,
+  //         [location]: "Closed",
+  //       }));
+  //     }
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    locations.forEach((location) => {
-      fetchLocationRatings(location);
-    });
-    quickBites.forEach((location) => {
-      fetchLocationRatings(location);
-    });
-    console.log("filter", selectedOptions);
-  }, [selectedOptions]);
+  // useEffect(() => {
+  //   locations.forEach((location) => {
+  //     fetchLocationRatings(location);
+  //   });
+  //   quickBites.forEach((location) => {
+  //     fetchLocationRatings(location);
+  //   });
+  //   console.log("filter", selectedOptions);
+  // }, [selectedOptions]);
 
-  const fetchLocationRatings = async (location) => {
-    const date = getDate();
-    try {
-      const response = await fetch(
-        selectedOptions === ""
-          ? `${
-              import.meta.env.VITE_API_BASE_URL
-            }/api/dinings/rating/${location}/${date}`
-          : `${
-              import.meta.env.VITE_API_BASE_URL
-            }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptions}`
-      );
+  // const fetchLocationRatings = async (location) => {
+  //   const date = getDate();
+  //   try {
+  //     const response = await fetch(
+  //       selectedOptions === ""
+  //         ? `${
+  //             import.meta.env.VITE_API_BASE_URL
+  //           }/api/dinings/rating/${location}/${date}`
+  //         : `${
+  //             import.meta.env.VITE_API_BASE_URL
+  //           }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptions}`
+  //     );
 
-      if (response.ok) {
-        const data = await response.json();
-        // console.log("called ratings", location, data);
-        setLocationRatings((prevRatings) => ({
-          ...prevRatings,
-          [location]: data.averageStars,
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching location times:", error);
-    }
-  };
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       // console.log("called ratings", location, data);
+  //       setLocationRatings((prevRatings) => ({
+  //         ...prevRatings,
+  //         [location]: data.averageStars,
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching location times:", error);
+  //   }
+  // };
 
-  const fetchLocationTimings = async (location) => {
-    const date = getDate();
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL
-        }/api/dinings/timing/${location}/${date}`
-      );
-      if (response.ok) {
-        const locationTimes = await response.json();
+  // const fetchLocationTimings = async (location) => {
+  //   const date = getDate();
+  //   try {
+  //     const response = await fetch(
+  //       `${
+  //         import.meta.env.VITE_API_BASE_URL
+  //       }/api/dinings/timing/${location}/${date}`
+  //     );
+  //     if (response.ok) {
+  //       const locationTimes = await response.json();
 
-        const currentTime = getCurrentTime(date);
-        var closestNextOpenTime = currentTime;
+  //       const currentTime = getCurrentTime(date);
+  //       var closestNextOpenTime = currentTime;
 
-        for (const timing of locationTimes) {
-          if (timing.status === "Open") {
-            // check if current time is within meal time
-            if (
-              currentTime >= timing.timing[0] &&
-              currentTime <= timing.timing[1]
-            ) {
-              // convert timing to 12 hour format
-              // const startTime = convertTo12HourFormat(timing.timing[0]);
-              const endTime = convertTo12HourFormat(timing.timing[1]);
-              setLocationTimings((prevTimings) => ({
-                ...prevTimings,
-                [location]: "Open till " + endTime,
-              }));
-            }
+  //       for (const timing of locationTimes) {
+  //         if (timing.status === "Open") {
+  //           // check if current time is within meal time
+  //           if (
+  //             currentTime >= timing.timing[0] &&
+  //             currentTime <= timing.timing[1]
+  //           ) {
+  //             // convert timing to 12 hour format
+  //             // const startTime = convertTo12HourFormat(timing.timing[0]);
+  //             const endTime = convertTo12HourFormat(timing.timing[1]);
+  //             setLocationTimings((prevTimings) => ({
+  //               ...prevTimings,
+  //               [location]: "Open till " + endTime,
+  //             }));
+  //           }
 
-            // if (currentTime <= timing.timing[0]) {
-            //   if (
-            //     closestNextOpenTime === currentTime ||
-            //     timing.timing[0] < closestNextOpenTime
-            //   ) {
-            //     closestNextOpenTime = timing.timing[0];
-            //   }
-            // }
-          }
-        }
+  //           // if (currentTime <= timing.timing[0]) {
+  //           //   if (
+  //           //     closestNextOpenTime === currentTime ||
+  //           //     timing.timing[0] < closestNextOpenTime
+  //           //   ) {
+  //           //     closestNextOpenTime = timing.timing[0];
+  //           //   }
+  //           // }
+  //         }
+  //       }
 
-        // locationTimings[location] == null &&
-        // closestNextOpenTime === currentTime
-        //   ? setLocationTimings((prevTimings) => ({
-        //       ...prevTimings,
-        //       [location]: "Closed for rest of today",
-        //     }))
-        //   : setLocationTimings((prevTimings) => ({
-        //       ...prevTimings,
-        //       [location]: "Closed, will open at " + closestNextOpenTime,
-        //     }));
-      }
-    } catch (error) {
-      console.error("Error fetching location times:", error);
-    }
-  };
+  //       // locationTimings[location] == null &&
+  //       // closestNextOpenTime === currentTime
+  //       //   ? setLocationTimings((prevTimings) => ({
+  //       //       ...prevTimings,
+  //       //       [location]: "Closed for rest of today",
+  //       //     }))
+  //       //   : setLocationTimings((prevTimings) => ({
+  //       //       ...prevTimings,
+  //       //       [location]: "Closed, will open at " + closestNextOpenTime,
+  //       //     }));
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching location times:", error);
+  //   }
+  // };
 
-  const handleRefresh = async (event) => {
-    setTimeout(() => {
-      locations.forEach((location) => {
-        fetchLocationRatings(location);
-        fetchLocationTimings(location);
-      });
+  // const handleRefresh = async (event) => {
+  //   setTimeout(() => {
+  //     locations.forEach((location) => {
+  //       fetchLocationRatings(location);
+  //       fetchLocationTimings(location);
+  //     });
 
-      quickBites.forEach((location) => {
-        fetchLocationRatings(location);
-        fetchLocationTimings(location);
-      });
-      event.detail.complete();
-    });
-  };
+  //     quickBites.forEach((location) => {
+  //       fetchLocationRatings(location);
+  //       fetchLocationTimings(location);
+  //     });
+  //     event.detail.complete();
+  //   });
+  // };
 
   const handleSelectionChange = (value) => {
     console.log(value);

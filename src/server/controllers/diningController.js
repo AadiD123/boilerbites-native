@@ -1,11 +1,15 @@
 async function getDiningTiming(req, res) {
-  const { location, date } = req.params;
+  const { location, date, time } = req.params;
   const pool = req.app.locals.pool;
   const connection = await pool.getConnection();
   try {
+    // const [rows] = await connection.query(
+    //   "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
+    //   [location, date]
+    // );
     const [rows] = await connection.query(
-      "SELECT * FROM boilerbites.timings WHERE location = ? AND date = ?",
-      [location, date]
+      "SELECT * FROM boilerbites.timings WHERE ? >= start_time AND ? <= end_time AND location = ? AND date = ?",
+      [time, time, location, date]
     );
     if (rows.length > 0) {
       const jsonData = rows[0].data;
