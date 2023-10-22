@@ -24,19 +24,34 @@ import {
   IonSelectOption,
 } from "@ionic/react";
 
+import "./Home.css";
+
+// Rating imports
 import { styled } from "@mui/material/styles";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Rating from "@mui/material/Rating";
 
-import { store } from "../App";
-
-import "./Home.css";
-
-import { Filter } from "@mui/icons-material";
+// Components
 import FilterDropdown from "../components/FilterDropdown";
 
+import { store } from "../App";
+
+const StyledStarIcon = styled(StarIcon)({
+  color: "black", // Change to the desired color
+});
+
+const StyledStarBorderIcon = styled(StarBorderIcon)({
+  color: "#8e6f3e", // Change to the desired color
+});
+
+const customIcons = {
+  filled: <StyledStarIcon fontSize="inherit" />,
+  empty: <StyledStarBorderIcon fontSize="inherit" />,
+};
+
 const Home = () => {
+  const [loading, setLoading] = useState(true);
   const locations = ["Earhart", "Ford", "Wiley", "Windsor", "Hillenbrand"];
   const quickBites = [
     "1Bowl",
@@ -45,22 +60,9 @@ const Home = () => {
     "The Gathering Place",
   ];
 
-  const [selectedOptions, setSelectedOptions] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [locationRatings, setLocationRatings] = useState({});
   const [locationTimings, setLocationTimings] = useState({});
-
-  const StyledStarIcon = styled(StarIcon)({
-    color: "black", // Change to the desired color
-  });
-
-  const StyledStarBorderIcon = styled(StarBorderIcon)({
-    color: "#8e6f3e", // Change to the desired color
-  });
-
-  const customIcons = {
-    filled: <StyledStarIcon fontSize="inherit" />,
-    empty: <StyledStarBorderIcon fontSize="inherit" />,
-  };
 
   const getDate = () => {
     const date = new Date();
@@ -102,140 +104,87 @@ const Home = () => {
     return `${hour}:${minutes} ${period}`;
   };
 
-  // useEffect(() => {
-  //   setLocationTimings({});
-  //   locations.forEach((location) => {
-  //     fetchLocationTimings(location);
-  //     if (locationTimings[location] == null) {
-  //       setLocationTimings((prevTimings) => ({
-  //         ...prevTimings,
-  //         [location]: "Closed",
-  //       }));
-  //     }
-  //   });
-  //   quickBites.forEach((location) => {
-  //     fetchLocationTimings(location);
-  //     if (locationTimings[location] == null) {
-  //       setLocationTimings((prevTimings) => ({
-  //         ...prevTimings,
-  //         [location]: "Closed",
-  //       }));
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    getFilters();
+  }, []);
 
-  // useEffect(() => {
-  //   locations.forEach((location) => {
-  //     fetchLocationRatings(location);
-  //   });
-  //   quickBites.forEach((location) => {
-  //     fetchLocationRatings(location);
-  //   });
-  //   console.log("filter", selectedOptions);
-  // }, [selectedOptions]);
+  const getFilters = async () => {
+    const storedFilters = await store.get("selectedFilters");
+    if (storedFilters) {
+      setSelectedOptions(JSON.parse(storedFilters));
+    }
+    setLoading(false);
+  };
 
-  // const fetchLocationRatings = async (location) => {
-  //   const date = getDate();
-  //   try {
-  //     const response = await fetch(
-  //       selectedOptions === ""
-  //         ? `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/rating/${location}/${date}`
-  //         : `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/rating/${location}/${date}/?restrict=${selectedOptions}`
-  //     );
+  useEffect(() => {
+    if (!loading) {
+      setLocationTimings({});
+      setLocationRatings({});
+      locations.forEach((location) => {
+        getData(location);
+      });
+      quickBites.forEach((location) => {
+        getData(location);
+      });
+    }
+  }, [selectedOptions]);
 
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       // console.log("called ratings", location, data);
-  //       setLocationRatings((prevRatings) => ({
-  //         ...prevRatings,
-  //         [location]: data.averageStars,
-  //       }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching location times:", error);
-  //   }
-  // };
+  const getData = async (location) => {
+    const currentTime = getCurrentTime();
+    const date = getDate();
+    console.log(location);
+    console.log(currentTime);
+    console.log(date);
+    console.log("Selected options", selectedOptions);
+    try {
+      const response = await fetch(
+        selectedOptions == ""
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/${location}/${date}/${currentTime}`
+          : `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/dinings/${location}/${date}/${currentTime}/?restrict=${selectedOptions}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setLocationRatings((prevRatings) => ({
+          ...prevRatings,
+          [location]: data.averageStars,
+        }));
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Open till " + convertTo12HourFormat(data.end),
+        }));
+      }
+      if (response.status === 404) {
+        setLocationTimings((prevTimings) => ({
+          ...prevTimings,
+          [location]: "Closed",
+        }));
+        setLocationRatings((prevRatings) => ({
+          ...prevRatings,
+          [location]: 0,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching location ratings:", error);
+    }
+  };
 
-  // const fetchLocationTimings = async (location) => {
-  //   const date = getDate();
-  //   try {
-  //     const response = await fetch(
-  //       `${
-  //         import.meta.env.VITE_API_BASE_URL
-  //       }/api/dinings/timing/${location}/${date}`
-  //     );
-  //     if (response.ok) {
-  //       const locationTimes = await response.json();
+  const handleRefresh = async (event) => {
+    setTimeout(() => {
+      setLocationTimings({});
+      setLocationRatings({});
+      locations.forEach((location) => {
+        getData(location);
+      });
 
-  //       const currentTime = getCurrentTime(date);
-  //       var closestNextOpenTime = currentTime;
-
-  //       for (const timing of locationTimes) {
-  //         if (timing.status === "Open") {
-  //           // check if current time is within meal time
-  //           if (
-  //             currentTime >= timing.timing[0] &&
-  //             currentTime <= timing.timing[1]
-  //           ) {
-  //             // convert timing to 12 hour format
-  //             // const startTime = convertTo12HourFormat(timing.timing[0]);
-  //             const endTime = convertTo12HourFormat(timing.timing[1]);
-  //             setLocationTimings((prevTimings) => ({
-  //               ...prevTimings,
-  //               [location]: "Open till " + endTime,
-  //             }));
-  //           }
-
-  //           // if (currentTime <= timing.timing[0]) {
-  //           //   if (
-  //           //     closestNextOpenTime === currentTime ||
-  //           //     timing.timing[0] < closestNextOpenTime
-  //           //   ) {
-  //           //     closestNextOpenTime = timing.timing[0];
-  //           //   }
-  //           // }
-  //         }
-  //       }
-
-  //       // locationTimings[location] == null &&
-  //       // closestNextOpenTime === currentTime
-  //       //   ? setLocationTimings((prevTimings) => ({
-  //       //       ...prevTimings,
-  //       //       [location]: "Closed for rest of today",
-  //       //     }))
-  //       //   : setLocationTimings((prevTimings) => ({
-  //       //       ...prevTimings,
-  //       //       [location]: "Closed, will open at " + closestNextOpenTime,
-  //       //     }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching location times:", error);
-  //   }
-  // };
-
-  // const handleRefresh = async (event) => {
-  //   setTimeout(() => {
-  //     locations.forEach((location) => {
-  //       fetchLocationRatings(location);
-  //       fetchLocationTimings(location);
-  //     });
-
-  //     quickBites.forEach((location) => {
-  //       fetchLocationRatings(location);
-  //       fetchLocationTimings(location);
-  //     });
-  //     event.detail.complete();
-  //   });
-  // };
-
-  const handleSelectionChange = (value) => {
-    console.log(value);
-
-    setSelectedOptions(value);
+      quickBites.forEach((location) => {
+        getData(location);
+      });
+      event.detail.complete();
+    });
   };
 
   return (
@@ -249,6 +198,7 @@ const Home = () => {
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent></IonRefresherContent>
         </IonRefresher>
+
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">Boiler Bites</IonTitle>
@@ -258,26 +208,13 @@ const Home = () => {
         <IonGrid>
           <IonRow>
             <IonCol class="ion-text-center">
-              <FilterDropdown setSelectedOptions={setSelectedOptions} />
+              <FilterDropdown
+                setSelectedOptions={setSelectedOptions}
+                selectedOptions={selectedOptions}
+              />
             </IonCol>
           </IonRow>
         </IonGrid>
-
-        {/* <IonItem>
-          <IonSelect
-            aria-label="Filter"
-            placeholder="Select all fruits that apply"
-            onIonChange={(e) => setSelectedOptions(e.detail.value)}
-            multiple={true}
-          >
-            <IonSelectOption value="vegetarian">vegetarian</IonSelectOption>
-            <IonSelectOption value="vegan">vegan</IonSelectOption>
-            <IonSelectOption value="no beef">no beef</IonSelectOption>
-            <IonSelectOption value="no pork">no pork</IonSelectOption>
-            <IonSelectOption value="gluten-free">gluten free</IonSelectOption>
-            <IonSelectOption value="no nuts">no nuts</IonSelectOption>
-          </IonSelect>
-        </IonItem> */}
 
         <IonCard style={{ paddingInline: "0px" }}>
           <IonCardHeader>
@@ -377,7 +314,7 @@ const Home = () => {
           </IonCardContent>
         </IonCard>
         <IonCard style={{ textAlign: "center", padding: "0.75em" }}>
-          <IonText>@ by Aaditya and Armanya</IonText>
+          <IonText>Aaditya and Armanya</IonText>
         </IonCard>
       </IonContent>
     </IonPage>

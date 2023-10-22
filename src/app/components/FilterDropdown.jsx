@@ -39,28 +39,30 @@ function getStyles(name, filterName, theme) {
   };
 }
 
-export default function FilterDropdown({ setSelectedOptions }) {
+export default function FilterDropdown({
+  setSelectedOptions,
+  selectedOptions,
+}) {
   const theme = useTheme();
-  const [filter, setFilterName] = useState([]);
+  const [filter, setFilterName] = useState(selectedOptions);
 
   useEffect(() => {
-    const getFilters = async () => {
-      const storedFilters = await store.get("selectedFilters");
-      if (storedFilters) {
-        setFilterName(JSON.parse(storedFilters));
-      }
-    };
-    getFilters();
-    setSelectedOptions(filter);
-  }, [setSelectedOptions]);
+    setFilterName(selectedOptions);
+  }, [selectedOptions]);
 
   const handleChange = async (event) => {
     const {
       target: { value },
     } = event;
     setFilterName(value);
+    if (value.length === 0) {
+      await store.remove("selectedFilters");
+      setSelectedOptions("");
+      return;
+    }
     await store.set("selectedFilters", JSON.stringify(value));
     setSelectedOptions(value);
+    // console.log(value);
   };
 
   return (
