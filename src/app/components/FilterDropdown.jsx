@@ -57,7 +57,7 @@ export default function FilterDropdown({
     setFilterName(value);
     if (value.length === 0) {
       await store.remove("selectedFilters");
-      setSelectedOptions("");
+      setSelectedOptions([]);
       return;
     }
     await store.set("selectedFilters", JSON.stringify(value));

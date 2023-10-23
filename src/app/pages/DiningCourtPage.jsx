@@ -37,18 +37,17 @@ import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
 
 export default function DiningCourtPage(props) {
+  let { place, restrictions } = useParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState(restrictions);
   const [locationRating, setLocationRating] = useState(0);
   const [locationTiming, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
 
+  const [loading, setLoading] = useState(true);
+
   const [mealNamesAndTimings, setMealNamesAndTimings] = useState({});
-
-  let { place } = useParams();
-
-  var formattedDate = "";
 
   const getDate = () => {
     const date = new Date();
@@ -92,23 +91,24 @@ export default function DiningCourtPage(props) {
   useEffect(() => {
     getAllMealNamesAndTimings();
     getCurrentData();
-    fetchSelectedMeal(selectedMeal);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchData();
+    if (!loading) {
+      fetchSelectedMeal(selectedMeal);
+      fetchData();
+    }
   }, [selectedDate, selectedMeal]);
 
   const fetchData = async () => {
-    formattedDate = getDate();
     fetchSelectedMeal();
   };
 
   const getAllMealNamesAndTimings = async () => {
+    let date = getDate();
     const response = await fetch(
-      `${
-        import.meta.env.VITE_API_BASE_URL
-      }/api/dinings/${place}/${formattedDate}`
+      `${import.meta.env.VITE_API_BASE_URL}/api/dinings/${place}/${date}`
     );
     if (response.ok) {
       const data = await response.json();
@@ -154,36 +154,31 @@ export default function DiningCourtPage(props) {
   };
 
   const fetchSelectedMeal = async () => {
+    let date = getDate();
     const response = await fetch(
       selectedOptions === ""
         ? `${
             import.meta.env.VITE_API_BASE_URL
-          }/api/dishes/${place}/${formattedDate}/${selectedMeal}`
+          }/api/dishes/${place}/${date}/${selectedMeal}`
         : `${
             import.meta.env.VITE_API_BASE_URL
-          }/api/dishes/${place}/${formattedDate}/${selectedMeal}/?restrict=${selectedOptions}`
+          }/api/dishes/${place}/${date}/${selectedMeal}/?restrict=${selectedOptions}`
     );
     if (response.ok) {
       const data = await response.json();
+      console.log(data);
 
-      const mealDict = {};
+      const tempMealDict = {};
 
-      for (const meal of data) {
-        if (selectedMeal == "") {
-          setSelectedMeal(meal["meal_name"]);
-          console.log(selectedMeal);
-        }
+      const stationsArray = data.map((station) => {
+        const stationName = station["station_name"];
+        const dishes = station["dishes"];
+        return { stationName, dishes };
+      });
 
-        const stationsArray = meal["stations"].map((station) => {
-          const stationName = station["station_name"];
-          const items = station["items"];
-          return { stationName, items };
-        });
+      tempMealDict[selectedMeal] = stationsArray;
 
-        mealDict[meal["meal_name"]] = stationsArray;
-      }
-
-      setMealDict(mealDict);
+      setMealDict(tempMealDict);
     } else {
       console.log("Error fetching data");
     }
@@ -317,38 +312,42 @@ export default function DiningCourtPage(props) {
         </IonGrid>
 
         {selectedMeal !== "" ? (
-          mealDict[selectedMeal] != null ? (
-            mealDict[selectedMeal]
-              .filter((s) => s.items.length > 0)
-              .map((stationData) => (
-                <IonCard key={stationData.stationName}>
-                  <IonCardHeader>
-                    <IonCardTitle>{stationData.stationName}</IonCardTitle>
-                  </IonCardHeader>
-                  <IonCardContent style={{ paddingInline: "0px" }}>
-                    <IonList>
-                      {stationData.items != null &&
-                      Array.isArray(stationData.items) ? (
-                        stationData.items
-                          .filter((dish) => dish != null) // Remove any null or undefined dishes
-                          .sort((a, b) => b.avg - a.avg) // Sort dishes by avg in ascending order
-                          .map((dish, index) => (
-                            <DishItem
-                              key={index}
-                              name={dish.dish_name}
-                              id={dish.id}
-                              avg={dish.avg}
-                              reviews={dish.reviews}
-                              date={selectedDate}
-                            />
-                          ))
-                      ) : (
-                        <p></p>
-                      )}
-                    </IonList>
-                  </IonCardContent>
-                </IonCard>
-              ))
+          mealDict[selectedMeal] != null &&
+          mealDict[selectedMeal].length > 0 ? (
+            mealDict[selectedMeal].map((stationData) => (
+              <IonCard key={stationData.stationName}>
+                <IonCardHeader>
+                  <IonCardTitle>{stationData.stationName}</IonCardTitle>
+                </IonCardHeader>
+                <IonCardContent style={{ paddingInline: "0px" }}>
+                  <IonList>
+                    {stationData.dishes != null &&
+                    stationData.dishes.length > 0 ? (
+                      stationData.dishes
+                        .filter((dish) => dish != null) // Remove any null or undefined dishes
+                        .sort((a, b) => {
+                          // Sort dishes by average stars in ascending order
+                          return (
+                            parseFloat(b.average_stars) -
+                            parseFloat(a.average_stars)
+                          );
+                        })
+                        .map((dish, index) => (
+                          <DishItem
+                            key={index}
+                            name={dish.dish_name}
+                            id={dish.id}
+                            avg={parseFloat(dish.average_stars)}
+                            // Add other necessary props here
+                          />
+                        ))
+                    ) : (
+                      <p></p>
+                    )}
+                  </IonList>
+                </IonCardContent>
+              </IonCard>
+            ))
           ) : (
             <IonCard>
               <IonCardHeader>
