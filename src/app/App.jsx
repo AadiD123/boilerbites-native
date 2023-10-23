@@ -46,7 +46,6 @@ const App = () => (
           path="/residential/:place/:restrictions?"
           component={DiningCourtPage}
         />
-
         {/* <Route exact path="/earhart">
           <DiningCourtPage location="Earhart" />
         </Route>
