@@ -36,23 +36,22 @@ import FoodCourtCard from "../components/FoodCourtCard";
 import Datepicker from "../components/DatePicker";
 import DishItem from "../components/DishItem";
 
-export default function DiningCourtPage(props) {
+export default function DiningCourtPage() {
   let { place, restrictions } = useParams();
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedOptions, setSelectedOptions] = useState(
     restrictions == undefined ? [] : restrictions
   );
   const [locationRating, setLocationRating] = useState(0);
-  const [locationTiming, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
 
   const [loading, setLoading] = useState(true);
 
   const [mealNamesAndTimings, setMealNamesAndTimings] = useState({});
 
-  const getDate = () => {
-    const date = new Date();
+  const formattedDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1);
     const day = String(date.getDate());
@@ -98,19 +97,15 @@ export default function DiningCourtPage(props) {
 
   useEffect(() => {
     if (!loading) {
-      fetchSelectedMeal(selectedMeal);
-      fetchData();
+      fetchSelectedMeal();
     }
   }, [selectedDate, selectedMeal]);
 
-  const fetchData = async () => {
-    fetchSelectedMeal();
-  };
-
   const getAllMealNamesAndTimings = async () => {
-    let date = getDate();
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/dinings/${place}/${date}`
+      `${
+        import.meta.env.VITE_API_BASE_URL
+      }/api/dinings/${place}/${formattedDate(selectedDate)}`
     );
     if (response.ok) {
       const data = await response.json();
@@ -124,6 +119,7 @@ export default function DiningCourtPage(props) {
             " - " +
             convertTo12HourFormat(meal.end_time);
         }
+        console.log(meal.meal_name, timing);
 
         setMealNamesAndTimings((mealNamesAndTimings) => ({
           ...mealNamesAndTimings,
@@ -138,27 +134,28 @@ export default function DiningCourtPage(props) {
   // Get the total average rating and timings for the location
   const getCurrentData = async () => {
     const currentTime = getCurrentTime();
-    const date = getDate();
     try {
       const response = await fetch(
         selectedOptions.length == 0
           ? `${
               import.meta.env.VITE_API_BASE_URL
-            }/api/dinings/${place}/${date}/${currentTime}`
+            }/api/dinings/${place}/${formattedDate(
+              selectedDate
+            )}/${currentTime}`
           : `${
               import.meta.env.VITE_API_BASE_URL
-            }/api/dinings/${place}/${date}/${currentTime}/?restrict=${selectedOptions}`
+            }/api/dinings/${place}/${formattedDate(
+              selectedDate
+            )}/${currentTime}/?restrict=${selectedOptions}`
       );
       if (response.ok) {
         const data = await response.json();
         setSelectedMeal(data.mealName);
         setLocationRating(data.averageStars);
-        setTimes(data.start + " - " + data.end);
       }
       if (response.status === 404) {
         selectedMeal("");
         setLocationRating(0);
-        setTimes("Closed");
       }
     } catch (error) {
       console.error("Error fetching location ratings:", error);
@@ -166,15 +163,16 @@ export default function DiningCourtPage(props) {
   };
 
   const fetchSelectedMeal = async () => {
-    let date = getDate();
     const response = await fetch(
       selectedOptions.length == 0
         ? `${
             import.meta.env.VITE_API_BASE_URL
-          }/api/dishes/${place}/${date}/${selectedMeal}`
+          }/api/dishes/${place}/${formattedDate(selectedDate)}/${selectedMeal}`
         : `${
             import.meta.env.VITE_API_BASE_URL
-          }/api/dishes/${place}/${date}/${selectedMeal}/?restrict=${selectedOptions}`
+          }/api/dishes/${place}/${formattedDate(
+            selectedDate
+          )}/${selectedMeal}/?restrict=${selectedOptions}`
     );
     if (response.ok) {
       const data = await response.json();
@@ -219,7 +217,9 @@ export default function DiningCourtPage(props) {
             <FoodCourtCard
               diningCourt={place}
               rating={locationRating}
-              timing={mealNamesAndTimings[selectedMeal]}
+              timing={
+                !loading ? mealNamesAndTimings[selectedMeal] : "Fetching..."
+              }
             />
           ) : (
             <FoodCourtCard diningCourt={place} />
