@@ -67,8 +67,8 @@ export default function FilterDropdown({
 
   return (
     <div>
-      <FormControl sx={{ m: 1, width: 300 }}>
-        <InputLabel id="demo-multiple-chip-label">Filter Dishes</InputLabel>
+      <FormControl sx={{ width: "95%" }}>
+        <InputLabel id="demo-multiple-chip-label">Filter</InputLabel>
         <Select
           labelId="demo-multiple-chip-label"
           id="demo-multiple-chip"
