@@ -251,6 +251,15 @@ export default function DiningCourtPage(props) {
             <IonCol></IonCol>
           </IonRow>
         </IonGrid>
+        {selectedOptions.length > 0 ? (
+          <IonCard>
+            <IonCardContent>
+              <p>{"Filtering by: " + selectedOptions}</p>
+            </IonCardContent>
+          </IonCard>
+        ) : (
+          <p></p>
+        )}
 
         {loading ? (
           <IonLoading
