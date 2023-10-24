@@ -269,53 +269,45 @@ export default function DiningCourtPage(props) {
           />
         ) : mealDict[selectedMeal] != null &&
           mealDict[selectedMeal].length > 0 ? (
-            mealDict[selectedMeal].map((stationData) => (
-              <IonCard key={stationData.stationName}>
-                <IonCardHeader>
-                  <IonCardTitle>{stationData.stationName}</IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent style={{ paddingInline: "0px" }}>
-                  <IonList>
-                    {stationData.dishes != null &&
-                    stationData.dishes.length > 0 ? (
-                      stationData.dishes
-                        .filter((dish) => dish != null) // Remove any null or undefined dishes
-                        .sort((a, b) => {
-                          // Sort dishes by average stars in ascending order
-                          return (
-                            parseFloat(b.average_stars) -
-                            parseFloat(a.average_stars)
-                          );
-                        })
-                        .map((dish, index) => (
-                          <DishItem
-                            key={index}
-                            name={dish.dish_name}
-                            id={dish.id}
-                            avg={parseFloat(dish.average_stars)}
-                            reviews={dish.num_ratings}
-                          />
-                        ))
-                    ) : (
-                      <p></p>
-                    )}
-                  </IonList>
-                </IonCardContent>
-              </IonCard>
-            ))
-          ) : (
-            <IonCard>
+          mealDict[selectedMeal].map((stationData) => (
+            <IonCard key={stationData.stationName}>
               <IonCardHeader>
-                <IonCardSubtitle>No meals served</IonCardSubtitle>
+                <IonCardTitle>{stationData.stationName}</IonCardTitle>
               </IonCardHeader>
+              <IonCardContent style={{ paddingInline: "0px" }}>
+                <IonList>
+                  {stationData.dishes != null &&
+                  stationData.dishes.length > 0 ? (
+                    stationData.dishes
+                      .filter((dish) => dish != null) // Remove any null or undefined dishes
+                      .sort((a, b) => {
+                        // Sort dishes by average stars in ascending order
+                        return (
+                          parseFloat(b.average_stars) -
+                          parseFloat(a.average_stars)
+                        );
+                      })
+                      .map((dish, index) => (
+                        <DishItem
+                          key={index}
+                          name={dish.dish_name}
+                          id={dish.id}
+                          avg={parseFloat(dish.average_stars)}
+                        />
+                      ))
+                  ) : (
+                    <p></p>
+                  )}
+                </IonList>
+              </IonCardContent>
             </IonCard>
-          )
+          ))
         ) : (
-          <IonLoading
-            isOpen={selectedMeal === ""}
-            message="Loading..."
-            spinner="circles"
-          />
+          <IonCard>
+            <IonCardHeader>
+              <IonCardSubtitle>No meals served</IonCardSubtitle>
+            </IonCardHeader>
+          </IonCard>
         )}
       </IonContent>
     </IonPage>
