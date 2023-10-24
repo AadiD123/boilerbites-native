@@ -293,6 +293,7 @@ export default function DiningCourtPage(props) {
                           name={dish.dish_name}
                           id={dish.id}
                           avg={parseFloat(dish.average_stars)}
+                          reviews={parseInt(dish.num_ratings)}
                         />
                       ))
                   ) : (

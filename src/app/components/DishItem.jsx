@@ -222,7 +222,7 @@ export default function DishItem(props) {
             <div key={index}>
               <h3 style={{ color: "black" }}>{props.name}</h3>
               <p>Serving Size: {field.serving_size}</p>
-              <p>Calories: {Math.ceil(field.calories)} g</p>
+              <p>Calories: {Math.ceil(field.calories)}</p>
               <p>Carbs: {Math.ceil(field.carbs)} g</p>
               <p>Protein: {Math.ceil(field.protein)} g</p>
               <p>Fat: {Math.ceil(field.fat)} g</p>
