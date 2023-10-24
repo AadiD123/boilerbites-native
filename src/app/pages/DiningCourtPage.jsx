@@ -40,7 +40,9 @@ export default function DiningCourtPage(props) {
   let { place, restrictions } = useParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState(restrictions != undefined ? restrictions: []);
+  const [selectedOptions, setSelectedOptions] = useState(
+    restrictions == undefined ? [] : restrictions
+  );
   const [locationRating, setLocationRating] = useState(0);
   const [locationTiming, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
@@ -113,9 +115,19 @@ export default function DiningCourtPage(props) {
     if (response.ok) {
       const data = await response.json();
       for (const meal of data) {
+        var timing = "";
+        if (meal.start_time == null && meal.end_time == null) {
+          timing = "Closed";
+        } else {
+          timing =
+            convertTo12HourFormat(meal.start_time) +
+            " - " +
+            convertTo12HourFormat(meal.end_time);
+        }
+
         setMealNamesAndTimings((mealNamesAndTimings) => ({
           ...mealNamesAndTimings,
-          [meal.meal_name]: [meal.start, meal.end],
+          [meal.meal_name]: timing,
         }));
       }
     } else {
@@ -129,7 +141,7 @@ export default function DiningCourtPage(props) {
     const date = getDate();
     try {
       const response = await fetch(
-        selectedOptions == ""
+        selectedOptions.length == 0
           ? `${
               import.meta.env.VITE_API_BASE_URL
             }/api/dinings/${place}/${date}/${currentTime}`
@@ -156,7 +168,7 @@ export default function DiningCourtPage(props) {
   const fetchSelectedMeal = async () => {
     let date = getDate();
     const response = await fetch(
-      selectedOptions === ""
+      selectedOptions.length == 0
         ? `${
             import.meta.env.VITE_API_BASE_URL
           }/api/dishes/${place}/${date}/${selectedMeal}`
@@ -166,7 +178,6 @@ export default function DiningCourtPage(props) {
     );
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
 
       const tempMealDict = {};
 
@@ -183,79 +194,6 @@ export default function DiningCourtPage(props) {
       console.log("Error fetching data");
     }
   };
-
-  // const fetchLocationTimings = async () => {
-  //   console.log("Fetching location timings");
-  //   try {
-  //     const response = await fetch(
-  //       selectedOptions === ""
-  //         ? `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/timing/${place}/${formattedDate}`
-  //         : `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/timing/${place}/${formattedDate}/?restrict=${selectedOptions}`
-  //     );
-  //     if (response.ok) {
-  //       const locationTimes = await response.json();
-
-  //       const currentTime = getCurrentTime(selectedDate);
-  //       console.log("Current time ", currentTime);
-
-  //       for (const timing of locationTimes) {
-  //         const startTime = convertTo12HourFormat(timing.timing[0]);
-  //         const endTime = convertTo12HourFormat(timing.timing[1]);
-
-  //         if (timing.status == "Closed") {
-  //           setTimes((otherTimes) => ({
-  //             ...otherTimes,
-  //             [timing["meal_name"]]: "Closed",
-  //           }));
-  //           continue;
-  //         }
-
-  //         setTimes((otherTimes) => ({
-  //           ...otherTimes,
-  //           [timing["meal_name"]]: startTime + " - " + endTime,
-  //         }));
-
-  //         if (timing.status === "Open") {
-  //           // check if current time is within meal time
-  //           if (
-  //             currentTime >= timing.timing[0] &&
-  //             currentTime <= timing.timing[1]
-  //           ) {
-  //             setSelectedMeal(timing["meal_name"]);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching location times:", error);
-  //   }
-  // };
-
-  // const fetchCurrentLocationRating = async () => {
-  //   console.log("Fetching location rating");
-  //   try {
-  //     const response = await fetch(
-  //       selectedOptions === ""
-  //         ? `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/rating/${place}/${formattedDate}`
-  //         : `${
-  //             import.meta.env.VITE_API_BASE_URL
-  //           }/api/dinings/rating/${place}/${formattedDate}/?restrict=${selectedOptions}`
-  //     );
-  //     if (response.ok) {
-  //       const rating = await response.json();
-  //       setLocationRating(rating.averageStars);
-  //       console.log(locationRating);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching location times:", error);
-  //   }
-  // };
 
   const handleDateChange = (selectedDate) => {
     setSelectedDate(selectedDate); // Update the date state
@@ -288,10 +226,12 @@ export default function DiningCourtPage(props) {
           )}
 
           <Datepicker onSelectDate={handleDateChange} />
+
           <IonRow>
+            <IonCol></IonCol>
             <IonCol>
-              <FormControl fullWidth>
-                <InputLabel>Select a Meal</InputLabel>
+              <FormControl style={{ width: "18em" }}>
+                <InputLabel>Meal</InputLabel>
                 <Select
                   value={selectedMeal}
                   label="Select a Meal"
@@ -308,11 +248,17 @@ export default function DiningCourtPage(props) {
                 </Select>
               </FormControl>
             </IonCol>
+            <IonCol></IonCol>
           </IonRow>
         </IonGrid>
 
-        {selectedMeal !== "" ? (
-          mealDict[selectedMeal] != null &&
+        {loading ? (
+          <IonLoading
+            isOpen={mealDict.length == 0}
+            message="Purdue Pete's looking for dishes..."
+            spinner="circles"
+          />
+        ) : mealDict[selectedMeal] != null &&
           mealDict[selectedMeal].length > 0 ? (
             mealDict[selectedMeal].map((stationData) => (
               <IonCard key={stationData.stationName}>

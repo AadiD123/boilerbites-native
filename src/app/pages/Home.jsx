@@ -112,6 +112,15 @@ const Home = () => {
     const storedFilters = await store.get("selectedFilters");
     if (storedFilters) {
       setSelectedOptions(JSON.parse(storedFilters));
+    } else {
+      setLocationTimings({});
+      setLocationRatings({});
+      locations.forEach((location) => {
+        getData(location);
+      });
+      quickBites.forEach((location) => {
+        getData(location);
+      });
     }
     setLoading(false);
   };
@@ -138,7 +147,7 @@ const Home = () => {
     console.log("Selected options", selectedOptions);
     try {
       const response = await fetch(
-        selectedOptions == ""
+        selectedOptions.length == 0
           ? `${
               import.meta.env.VITE_API_BASE_URL
             }/api/dinings/${location}/${date}/${currentTime}`
