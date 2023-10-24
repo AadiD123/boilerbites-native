@@ -1,8 +1,4 @@
-<<<<<<< HEAD:dist/assets/swipe-back-legacy-13910658.js
-System.register(["./index-legacy-f2b0f64b.js","./index2-legacy-c9f25fa7.js"],(function(e,t){"use strict";var n,r,i;return{setters:[e=>{n=e.i,r=e.c},e=>{i=e.createGesture}],execute:function(){
-=======
-System.register(["./index-legacy-5a09d5c9.js","./index2-legacy-b0524bde.js"],(function(e,t){"use strict";var n,r,i;return{setters:[e=>{n=e.i,r=e.c},e=>{i=e.createGesture}],execute:function(){
->>>>>>> 26eddd1f5f3bfd22a7c5fb10afb94a5d943889ea:dist/assets/swipe-back-legacy-a7be0c97.js
+System.register(["./index-legacy-b30c4997.js","./index2-legacy-7d7e0f61.js"],(function(e,t){"use strict";var n,r,i;return{setters:[e=>{n=e.i,r=e.c},e=>{i=e.createGesture}],execute:function(){
 /*!
        * (C) Ionic http://ionicframework.com - MIT License
        */

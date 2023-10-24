@@ -40,7 +40,7 @@ export default function DiningCourtPage(props) {
   let { place, restrictions } = useParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMeal, setSelectedMeal] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState(restrictions);
+  const [selectedOptions, setSelectedOptions] = useState(restrictions != undefined ? restrictions: []);
   const [locationRating, setLocationRating] = useState(0);
   const [locationTiming, setTimes] = useState({});
   const [mealDict, setMealDict] = useState({});
@@ -338,7 +338,7 @@ export default function DiningCourtPage(props) {
                             name={dish.dish_name}
                             id={dish.id}
                             avg={parseFloat(dish.average_stars)}
-                            // Add other necessary props here
+                            reviews={dish.num_ratings}
                           />
                         ))
                     ) : (
