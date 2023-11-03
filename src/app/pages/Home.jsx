@@ -231,46 +231,54 @@ const Home = () => {
           </IonCardHeader>
           <IonCardContent style={{ paddingInline: "0px" }}>
             <IonList>
-              {locations.map((location, index) => (
-                <IonItem
-                  routerLink={`/residential/${location}/${selectedOptions}`}
-                  key={index}
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    "--detail-icon-color": "transparent",
-                    "--detail-icon-size": "0",
-                    padding: "0px",
-                    margin: "0px",
-                    minHeight: "4.5em",
-                  }}
-                >
-                  <div className="home-list-item-cont">
-                    <IonThumbnail slot="start">
-                      <img
-                        alt={`${location}`}
-                        src={`/assets/${location}.png`}
+              {locations
+                .sort((a, b) => {
+                  const ratingA = locationRatings[a] || 0;
+                  const ratingB = locationRatings[b] || 0;
+
+                  // Sort in descending order (highest rating first).
+                  return ratingB - ratingA;
+                })
+                .map((location, index) => (
+                  <IonItem
+                    routerLink={`/residential/${location}/${selectedOptions}`}
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      "--detail-icon-color": "transparent",
+                      "--detail-icon-size": "0",
+                      padding: "0px",
+                      margin: "0px",
+                      minHeight: "4.5em",
+                    }}
+                  >
+                    <div className="home-list-item-cont">
+                      <IonThumbnail slot="start">
+                        <img
+                          alt={`${location}`}
+                          src={`/assets/${location}.png`}
+                        />
+                      </IonThumbnail>
+
+                      <div style={{ fontSize: "0.9em", textAlign: "center" }}>
+                        <IonLabel>{location}</IonLabel>
+                        <IonLabel>{locationTimings[location]}</IonLabel>
+                      </div>
+
+                      <Rating
+                        name="read-only"
+                        value={locationRatings[location] || 0}
+                        readOnly
+                        precision={0.1}
+                        emptyIcon={customIcons.empty}
+                        icon={customIcons.filled}
                       />
-                    </IonThumbnail>
-
-                    <div style={{ fontSize: "0.9em", textAlign: "center" }}>
-                      <IonLabel>{location}</IonLabel>
-                      <IonLabel>{locationTimings[location]}</IonLabel>
+                      {/* {console.log(locationRatings)} */}
+                      {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
                     </div>
-
-                    <Rating
-                      name="read-only"
-                      value={locationRatings[location] || 0}
-                      readOnly
-                      precision={0.1}
-                      emptyIcon={customIcons.empty}
-                      icon={customIcons.filled}
-                    />
-                    {/* {console.log(locationRatings)} */}
-                    {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
-                  </div>
-                </IonItem>
-              ))}
+                  </IonItem>
+                ))}
             </IonList>
           </IonCardContent>
         </IonCard>
@@ -280,45 +288,53 @@ const Home = () => {
           </IonCardHeader>
           <IonCardContent style={{ paddingInline: "0px" }}>
             <IonList>
-              {quickBites.map((location, index) => (
-                <IonItem
-                  routerLink={`/residential/${location}/${selectedOptions}`}
-                  key={index}
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    "--detail-icon-color": "transparent",
-                    "--detail-icon-size": "0",
-                    padding: "0px",
-                    margin: "0px",
-                    minHeight: "4.5em",
-                  }}
-                >
-                  <div className="home-list-item-cont">
-                    <IonThumbnail slot="start">
-                      <img
-                        alt={`${location}`}
-                        src={`/assets/${location}.png`}
+              {quickBites
+                .sort((a, b) => {
+                  const ratingA = locationRatings[a] || 0;
+                  const ratingB = locationRatings[b] || 0;
+
+                  // Sort in descending order (highest rating first).
+                  return ratingB - ratingA;
+                })
+                .map((location, index) => (
+                  <IonItem
+                    routerLink={`/residential/${location}/${selectedOptions}`}
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      "--detail-icon-color": "transparent",
+                      "--detail-icon-size": "0",
+                      padding: "0px",
+                      margin: "0px",
+                      minHeight: "4.5em",
+                    }}
+                  >
+                    <div className="home-list-item-cont">
+                      <IonThumbnail slot="start">
+                        <img
+                          alt={`${location}`}
+                          src={`/assets/${location}.png`}
+                        />
+                      </IonThumbnail>
+
+                      <div style={{ fontSize: "0.9em", textAlign: "center" }}>
+                        <IonLabel>{location}</IonLabel>
+                        <IonLabel>{locationTimings[location]}</IonLabel>
+                      </div>
+
+                      <Rating
+                        name="read-only"
+                        value={locationRatings[location] || 0}
+                        readOnly
+                        precision={0.1}
+                        emptyIcon={customIcons.empty}
+                        icon={customIcons.filled}
                       />
-                    </IonThumbnail>
-
-                    <div style={{ fontSize: "0.9em", textAlign: "center" }}>
-                      <IonLabel>{location}</IonLabel>
-                      <IonLabel>{locationTimings[location]}</IonLabel>
+                      {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
                     </div>
-
-                    <Rating
-                      name="read-only"
-                      value={locationRatings[location] || 0}
-                      readOnly
-                      precision={0.1}
-                      emptyIcon={customIcons.empty}
-                      icon={customIcons.filled}
-                    />
-                    {/* <IonNote slot="end">{locationRatings[location].toFixed(1) || 0}</IonNote> */}
-                  </div>
-                </IonItem>
-              ))}
+                  </IonItem>
+                ))}
             </IonList>
           </IonCardContent>
         </IonCard>

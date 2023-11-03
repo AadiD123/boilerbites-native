@@ -152,6 +152,13 @@ export default function DiningCourtPage() {
         const data = await response.json();
         setSelectedMeal(data.mealName);
         setLocationRating(data.averageStars);
+        setMealNamesAndTimings((mealNamesAndTimings) => ({
+          ...mealNamesAndTimings,
+          [data.mealName]:
+            convertTo12HourFormat(data.start) +
+            " - " +
+            convertTo12HourFormat(data.end),
+        }));
       }
       if (response.status === 404) {
         selectedMeal("");
@@ -281,7 +288,7 @@ export default function DiningCourtPage() {
                     stationData.dishes
                       .filter((dish) => dish != null) // Remove any null or undefined dishes
                       .sort((a, b) => {
-                        // Sort dishes by average stars in ascending order
+                        // Sort dishes by average stars in descending order
                         return (
                           parseFloat(b.average_stars) -
                           parseFloat(a.average_stars)
