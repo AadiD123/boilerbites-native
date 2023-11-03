@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IonItem, IonLabel, IonNote, IonList, IonTitle } from "@ionic/react";
+import { IonItem, IonLabel, IonNote, IonList, IonTitle, IonButton } from "@ionic/react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
@@ -32,6 +32,7 @@ export default function DishItem(props) {
   const [reviews, setReviews] = useState(props.reviews || 0);
   const [starColor, setStarColor] = useState("black");
   const [precision, setPrecision] = useState(0.1);
+  const [servings, setServings] = useState(1);
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState([]);
 
@@ -39,6 +40,20 @@ export default function DishItem(props) {
 
   function dismiss() {
     modal.current?.dismiss();
+  }
+
+  function plus() {
+    setServings(servings + 1);
+  }
+
+  function minus() {
+    if (servings > 0) {
+      setServings(servings - 1);
+    }
+  }
+
+  function addToTracker() {
+    console.log(Math.ceil(info[0].calories * servings), Math.ceil(info[0].carbs * servings), Math.ceil(info[0].protein * servings), Math.ceil(info[0].fat * servings));
   }
 
   const fetchInfo = () => {
@@ -222,10 +237,17 @@ export default function DishItem(props) {
             <div key={index}>
               <h3 style={{ color: "black" }}>{props.name}</h3>
               <p>Serving Size: {field.serving_size}</p>
-              <p>Calories: {Math.ceil(field.calories)}</p>
-              <p>Carbs: {Math.ceil(field.carbs)} g</p>
-              <p>Protein: {Math.ceil(field.protein)} g</p>
-              <p>Fat: {Math.ceil(field.fat)} g</p>
+              <p>Calories: {Math.ceil(field.calories * servings)}</p>
+              <p>Carbs: {Math.ceil(field.carbs * servings)} g</p>
+              <p>Protein: {Math.ceil(field.protein * servings)} g</p>
+              <p>Fat: {Math.ceil(field.fat * servings)} g</p>
+              <IonItem>
+                <IonButton onClick={plus}>+</IonButton>
+                <p>{servings}</p>
+                <IonButton onClick={minus}>-</IonButton>
+                <p>Servings</p>
+                <IonButton onClick={addToTracker}>ADD</IonButton>
+              </IonItem>
             </div>
           ))}
         </Box>
