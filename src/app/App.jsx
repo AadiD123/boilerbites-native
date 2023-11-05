@@ -1,5 +1,5 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonRouterOutlet, IonApp, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home.jsx";
 
@@ -35,45 +35,31 @@ store.create();
 const App = () => (
   <IonApp>
     <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-        <Route
-          path="/residential/:place/:restrictions?"
-          component={DiningCourtPage}
-        />
-        {/* <Route exact path="/earhart">
-          <DiningCourtPage location="Earhart" />
-        </Route>
-        <Route exact path="/ford">
-          <DiningCourtPage location="Ford" />
-        </Route>
-        <Route exact path="/hillenbrand">
-          <DiningCourtPage location="Hillenbrand" />
-        </Route>
-        <Route exact path="/wiley">
-          <DiningCourtPage location="Wiley" />
-        </Route>
-        <Route exact path="/windsor">
-          <DiningCourtPage location="Windsor" />
-        </Route>
-        <Route exact path="/1bowl">
-          <DiningCourtPage location="1Bowl" />
-        </Route>
-        <Route exact path="/Pete's Za">
-          <DiningCourtPage location="Pete's Za" />
-        </Route>
-        <Route exact path="/The Burrow">
-          <DiningCourtPage location="The Burrow" />
-        </Route>
-        <Route exact path="/The Gathering Place">
-          <DiningCourtPage location="The Gathering Place" />
-        </Route> */}
-      </IonRouterOutlet>
+      <IonTabs>
+        <IonRouterOutlet>
+          <Route exact path="/residential">
+            <Home />
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/residential" />
+          </Route>
+          <Route
+            path="/residential/:place/:restrictions?"
+            component={DiningCourtPage}
+          />
+        </IonRouterOutlet>
+        <IonTabBar slot="bottom">
+          <IonTabButton tab="residential" href="/residential">
+            <IonLabel>Residential</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="retail" href="/retail">
+            <IonLabel>Retail</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="Tracker" href="/tracker">
+            <IonLabel>Tracker</IonLabel>
+          </IonTabButton>
+        </IonTabBar>
+      </IonTabs>
     </IonReactRouter>
   </IonApp>
 );
