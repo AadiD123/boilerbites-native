@@ -18,16 +18,33 @@ import { useEffect, useState } from "react";
 
 export default function Retail() {
   const locations = {
-    Qdoba: {
-      Monday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
-      Tuesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
-      Wednesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
-      Thursday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
-      Friday: ["11:00:00 14:00:00"],
-      Saturday: ["11:00:00 14:00:00"],
+    Aatish: {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
       Sunday: ["17:00:00 20:00:00"],
     },
-    "Jersey Mike's": {
+    "BBQ District": {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
+    },
+    "Burger 101": {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
+    },
+    "Cary Knight Spot": {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
+      Sunday: ["17:00:00 20:00:00"],
+    },
+    "Chef Bill Kim's": {
       Monday: ["17:00:00 20:00:00"],
       Tuesday: ["17:00:00 20:00:00"],
       Wednesday: ["17:00:00 20:00:00"],
@@ -41,6 +58,39 @@ export default function Retail() {
       Friday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Saturday: ["11:00:00 14:00:00"],
     },
+    Così: {
+      Monday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
+      Tuesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
+      Wednesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
+      Thursday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
+      Friday: ["11:00:00 14:00:00"],
+    },
+    "Fresh Fare": {
+      Monday: ["7:30:00 10:30:00"],
+      Tuesday: ["7:30:00 10:30:00"],
+      Wednesday: ["7:30:00 10:30:00"],
+      Thursday: ["7:30:00 10:30:00"],
+      Friday: ["7:30:00 10:30:00"],
+    },
+    Freshens: {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
+    },
+    "Jersey Mike's": {
+      Monday: ["17:00:00 20:00:00"],
+      Tuesday: ["17:00:00 20:00:00"],
+      Wednesday: ["17:00:00 20:00:00"],
+      Thursday: ["17:00:00 20:00:00"],
+    },
+    Lawson: {
+      Monday: ["7:30:00 17:00:00"],
+      Tuesday: ["7:30:00 17:00:00"],
+      Wednesday: ["7:30:00 17:00:00"],
+      Thursday: ["7:30:00 17:00:00"],
+      Friday: ["7:30:00 17:00:00"],
+    },
     Panera: {
       Monday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Tuesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
@@ -49,30 +99,13 @@ export default function Retail() {
       Friday: ["11:00:00 14:00:00"],
       Saturday: ["11:00:00 14:00:00"],
     },
-    "Shen Ye": {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
-    },
-    Freshens: {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
-    },
-    Cosi: {
+    Qdoba: {
       Monday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Tuesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Wednesday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Thursday: ["11:00:00 14:00:00", "17:00:00 20:00:00"],
       Friday: ["11:00:00 14:00:00"],
-    },
-    "Cary Knight Spot": {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
+      Saturday: ["11:00:00 14:00:00"],
       Sunday: ["17:00:00 20:00:00"],
     },
     Saladworks: {
@@ -82,27 +115,13 @@ export default function Retail() {
       Thursday: ["11:00:00 14:00:00"],
       Friday: ["11:00:00 14:00:00"],
     },
-    Aatish: {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
-      Sunday: ["17:00:00 20:00:00"],
-    },
-    Zen: {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
-      Sunday: ["17:00:00 20:00:00"],
-    },
-    "Chef Bill Kim's": {
+    "Shen Ye": {
       Monday: ["17:00:00 20:00:00"],
       Tuesday: ["17:00:00 20:00:00"],
       Wednesday: ["17:00:00 20:00:00"],
       Thursday: ["17:00:00 20:00:00"],
     },
-    "Burger 101": {
+    "Sol Toro": {
       Monday: ["17:00:00 20:00:00"],
       Tuesday: ["17:00:00 20:00:00"],
       Wednesday: ["17:00:00 20:00:00"],
@@ -115,24 +134,12 @@ export default function Retail() {
       Thursday: ["17:00:00 20:00:00"],
       Sunday: ["17:00:00 20:00:00"],
     },
-    "Sol Toro": {
+    Zen: {
       Monday: ["17:00:00 20:00:00"],
       Tuesday: ["17:00:00 20:00:00"],
       Wednesday: ["17:00:00 20:00:00"],
       Thursday: ["17:00:00 20:00:00"],
-    },
-    "BBQ District": {
-      Monday: ["17:00:00 20:00:00"],
-      Tuesday: ["17:00:00 20:00:00"],
-      Wednesday: ["17:00:00 20:00:00"],
-      Thursday: ["17:00:00 20:00:00"],
-    },
-    "Fresh Fare": {
-      Monday: ["7:30:00 10:30:00"],
-      Tuesday: ["7:30:00 10:30:00"],
-      Wednesday: ["7:30:00 10:30:00"],
-      Thursday: ["7:30:00 10:30:00"],
-      Friday: ["7:30:00 10:30:00"],
+      Sunday: ["17:00:00 20:00:00"],
     },
   };
 
@@ -150,41 +157,11 @@ export default function Retail() {
   const [swipesNotAccepted, setSwipesNotAccepted] = useState([]);
 
   useEffect(() => {
-    setSwipesAccepted(() => {
-      return Object.keys(locations).filter((location) => {
-        const day = daysOfWeek[new Date().getDay()];
-        if (day in locations[location]) {
-          const timings = locations[location][day];
-          for (const timing of timings) {
-            const [start, end] = timing.split(" ");
-            const [startHour, startMinute, startSecond] = start.split(":");
-            const [endHour, endMinute, endSecond] = end.split(":");
-            const currentTime = new Date();
-            const currentHour = currentTime.getHours();
-            const currentMinute = currentTime.getMinutes();
-            const currentSecond = currentTime.getSeconds();
-            if (
-              currentHour >= startHour &&
-              currentHour <= endHour &&
-              currentMinute >= startMinute &&
-              currentMinute <= endMinute &&
-              currentSecond >= startSecond &&
-              currentSecond <= endSecond
-            ) {
-              return true;
-            }
-          }
-        }
-        return false;
-      });
-    });
-
-    setSwipesNotAccepted(() => {
-      return Object.keys(locations).filter((location) => {
-        const day = daysOfWeek[new Date().getDay()];
-        if (!(day in locations[location])) {
-          return true;
-        }
+    setSwipesAccepted([]);
+    setSwipesNotAccepted([]);
+    for (const location in locations) {
+      const day = daysOfWeek[new Date().getDay()];
+      if (day in locations[location]) {
         const timings = locations[location][day];
         for (const timing of timings) {
           const [start, end] = timing.split(" ");
@@ -194,20 +171,37 @@ export default function Retail() {
           const currentHour = currentTime.getHours();
           const currentMinute = currentTime.getMinutes();
           const currentSecond = currentTime.getSeconds();
-          if (
-            currentHour >= startHour &&
-            currentHour <= endHour &&
-            currentMinute >= startMinute &&
-            currentMinute <= endMinute &&
-            currentSecond >= startSecond &&
-            currentSecond <= endSecond
-          ) {
-            return false;
+          console.log(location, startHour, endHour, currentHour);
+          if (currentHour >= startHour && currentHour <= endHour) {
+            if (
+              (currentHour == startHour && currentMinute > startMinute) ||
+              (currentHour == endHour && currentMinute < endMinute)
+            ) {
+              setSwipesAccepted((swipesAccepted) => {
+                return [...swipesAccepted, location];
+              });
+              break;
+            } else if (currentHour > startHour && currentHour < endHour) {
+              setSwipesAccepted((swipesAccepted) => {
+                return [...swipesAccepted, location];
+              });
+              break;
+            }
+          }
+          if (!(location in swipesNotAccepted)) {
+            setSwipesNotAccepted((swipesNotAccepted) => {
+              return [...swipesNotAccepted, location];
+            });
           }
         }
-        return true;
-      });
-    });
+      } else {
+        if (!(location in swipesNotAccepted)) {
+          setSwipesNotAccepted((swipesNotAccepted) => {
+            return [...swipesNotAccepted, location];
+          });
+        }
+      }
+    }
   }, []);
 
   return (
