@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IonItem, IonLabel, IonNote, IonList, IonTitle, IonButton } from "@ionic/react";
+import {
+  IonItem,
+  IonLabel,
+  IonNote,
+  IonList,
+  IonTitle,
+  IonButton,
+} from "@ionic/react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
@@ -53,7 +60,12 @@ export default function DishItem(props) {
   }
 
   function addToTracker() {
-    console.log(Math.ceil(info[0].calories * servings), Math.ceil(info[0].carbs * servings), Math.ceil(info[0].protein * servings), Math.ceil(info[0].fat * servings));
+    console.log(
+      Math.ceil(info[0].calories * servings),
+      Math.ceil(info[0].carbs * servings),
+      Math.ceil(info[0].protein * servings),
+      Math.ceil(info[0].fat * servings)
+    );
   }
 
   const fetchInfo = () => {
@@ -234,21 +246,25 @@ export default function DishItem(props) {
           }}
         >
           {info.map((field, index) => (
-            <div key={index}>
+            <IonList key={index}>
               <h3 style={{ color: "black" }}>{props.name}</h3>
               <p>Serving Size: {field.serving_size}</p>
               <p>Calories: {Math.ceil(field.calories * servings)}</p>
               <p>Carbs: {Math.ceil(field.carbs * servings)} g</p>
               <p>Protein: {Math.ceil(field.protein * servings)} g</p>
               <p>Fat: {Math.ceil(field.fat * servings)} g</p>
-              <IonItem>
-                <IonButton onClick={plus}>+</IonButton>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <IonButton shape="round" onClick={minus}>
+                  -
+                </IonButton>
                 <p>{servings}</p>
-                <IonButton onClick={minus}>-</IonButton>
+                <IonButton shape="round" onClick={plus}>
+                  +
+                </IonButton>
                 <p>Servings</p>
                 <IonButton onClick={addToTracker}>ADD</IonButton>
-              </IonItem>
-            </div>
+              </div>
+            </IonList>
           ))}
         </Box>
       </Modal>

@@ -1,7 +1,17 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonRouterOutlet, IonApp, setupIonicReact } from "@ionic/react";
+import {
+  IonTabs,
+  IonTabBar,
+  IonTabButton,
+  IonIcon,
+  IonLabel,
+  IonRouterOutlet,
+  IonApp,
+  setupIonicReact,
+} from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home.jsx";
+import Retail from "./pages/Retail.jsx";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -39,6 +49,9 @@ const App = () => (
         <IonRouterOutlet>
           <Route exact path="/residential">
             <Home />
+          </Route>
+          <Route exact path="/retail">
+            <Retail />
           </Route>
           <Route exact path="/">
             <Redirect to="/residential" />
