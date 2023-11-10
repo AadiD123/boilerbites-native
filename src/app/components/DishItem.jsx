@@ -59,13 +59,11 @@ export default function DishItem(props) {
     }
   }
 
-  function addToTracker() {
-    console.log(
-      Math.ceil(info[0].calories * servings),
-      Math.ceil(info[0].carbs * servings),
-      Math.ceil(info[0].protein * servings),
-      Math.ceil(info[0].fat * servings)
-    );
+  async function addToTracker() {
+    store.set("Calories", await store.get("Calories") + Math.ceil(info[0].calories * servings));
+    store.set("Carbs", await store.get("Carbs") + Math.ceil(info[0].carbs * servings));
+    store.set("Protein", await store.get("Protein") + Math.ceil(info[0].protein * servings));
+    store.set("Fat", await store.get("Fat") + Math.ceil(info[0].fat * servings));
   }
 
   const fetchInfo = () => {
@@ -80,7 +78,7 @@ export default function DishItem(props) {
     fetchInfo();
     // dish_id -> rating_id -> rating
     const checkIfRatingExists = async () => {
-      if ((await store.get(props.id)) != null) {
+      if ((await(props.id)) != null) {
         const ratingId = await store.get(props.id);
         const storedRating = await store.get(ratingId);
         if (storedRating !== null) {

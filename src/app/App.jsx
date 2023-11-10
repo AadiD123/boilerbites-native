@@ -12,6 +12,7 @@ import {
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home.jsx";
 import Retail from "./pages/Retail.jsx";
+import Tracker from "./pages/Tracker.jsx";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -56,6 +57,9 @@ const App = () => (
           <Route exact path="/">
             <Redirect to="/residential" />
           </Route>
+          <Route exact path="/tracker">
+            <Tracker />
+          </Route>
           <Route
             path="/residential/:place/:restrictions?"
             component={DiningCourtPage}
@@ -68,7 +72,7 @@ const App = () => (
           <IonTabButton tab="retail" href="/retail">
             <IonLabel>Retail</IonLabel>
           </IonTabButton>
-          <IonTabButton tab="Tracker" href="/tracker">
+          <IonTabButton tab="tracker" href="/tracker">
             <IonLabel>Tracker</IonLabel>
           </IonTabButton>
         </IonTabBar>
