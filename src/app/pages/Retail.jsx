@@ -159,8 +159,11 @@ export default function Retail() {
   useEffect(() => {
     setSwipesAccepted([]);
     setSwipesNotAccepted([]);
+
     for (const location in locations) {
       const day = daysOfWeek[new Date().getDay()];
+      let accepted = false;
+
       if (day in locations[location]) {
         const timings = locations[location][day];
         for (const timing of timings) {
@@ -180,26 +183,23 @@ export default function Retail() {
               setSwipesAccepted((swipesAccepted) => {
                 return [...swipesAccepted, location];
               });
+              accepted = true;
               break;
             } else if (currentHour > startHour && currentHour < endHour) {
               setSwipesAccepted((swipesAccepted) => {
                 return [...swipesAccepted, location];
               });
+              accepted = true;
               break;
             }
           }
-          if (!(location in swipesNotAccepted)) {
-            setSwipesNotAccepted((swipesNotAccepted) => {
-              return [...swipesNotAccepted, location];
-            });
-          }
         }
-      } else {
-        if (!(location in swipesNotAccepted)) {
-          setSwipesNotAccepted((swipesNotAccepted) => {
-            return [...swipesNotAccepted, location];
-          });
-        }
+      }
+
+      if (!accepted) {
+        setSwipesNotAccepted((swipesNotAccepted) => {
+          return [...swipesNotAccepted, location];
+        });
       }
     }
   }, []);
