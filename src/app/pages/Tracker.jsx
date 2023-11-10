@@ -2,7 +2,7 @@ import { IonAvatar, IonButton, IonButtons, IonCard, IonCardContent,
   IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonFab, 
   IonFabButton, IonFabList, IonHeader, IonIcon, IonItem, IonItemOption, 
   IonItemOptions, IonItemSliding, IonLabel, IonList, IonListHeader, 
-  IonMenuButton, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
+  IonMenuButton, IonPage, IonText, IonTitle, IonToolbar, useIonViewWillEnter } from '@ionic/react';
   
 import React, { useState, useEffect } from 'react';
 import { addCircle, arrowBackCircle, key, add, addCircleOutline, timeOutline, folderOpen, calendarOutline, cardOutline } from 'ionicons/icons';
@@ -42,9 +42,9 @@ const Tracker = () => {
     }
   };
 
-  useEffect(() => {
-    fetchChartData();
-  }, []); // Empty dependency array ensures this effect runs once after the initial render
+  useIonViewWillEnter(() => {
+    fetchChartData(); // Fetch data whenever the user navigates to this tab
+  });
 
   return (
     <IonPage>
